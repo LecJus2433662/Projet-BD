@@ -64,7 +64,7 @@ CREATE TABLE stationnementEntreeSortie
 (
 	entreSortieStationnement		INT				NOT NULL		IDENTITY(1,1),
 	dateEntree						date 			NOT NULL,
-	dateSortie						date			NOT NULL,
+	dateSortie						date,
 	paiementSortie					DECIMAL(4,2)	NOT NULL,
 	paiementRecu					BIT				NOT NULL,
 	numVehicule						INT 			NOT NULL,
