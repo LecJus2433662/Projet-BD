@@ -28,8 +28,6 @@ CREATE TABLE vehicule
 	modele							VARCHAR(30)		NOT NULL,
 	plaqueImmatriculation			VARCHAR(30)		NOT NULL,
 	couleur							VARCHAR(30)		NOT NULL,
-	email							VARCHAR(255)	NOT NULL,
-	motDePasse						VARCHAR(255)	NOT NULL,
 	PRIMARY KEY (numVehicule)
 );
 
