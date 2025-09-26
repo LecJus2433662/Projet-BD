@@ -17,7 +17,8 @@ CREATE TABLE utilisateur
 	ville			VARCHAR(30)		NOT NULL,
 	pays			VARCHAR(30)		NOT NULL,
 	email			VARCHAR(255)	NOT NULL,
-	motDePasse		VARCHAR(255)	NOT NULL,
+	motDePasse		BINARY(64)	NOT NULL,
+	sel				UNIQUEIDENTIFIER NOT NULL,
 	PRIMARY KEY (noUtilisateur)
 );
 
@@ -43,7 +44,7 @@ CREATE TABLE stationnement
 (
 	numStationnement			INT				NOT NULL		IDENTITY(1,1),
 	nombrePlaceMax				INT				NOT NULL,
-	dureeMaxStationnement		date			NOT NULL,
+	dureeMaxStationnement		time			NOT NULL,
 	entreSortieStationnement	INT				NOT NULL,
 	tarif 						DECIMAL(4,2)	NOT NULL,
 	estPlein					BIT,
@@ -64,7 +65,7 @@ CREATE TABLE stationnementEntreeSortie
 (
 	entreSortieStationnement		INT				NOT NULL		IDENTITY(1,1),
 	dateEntree						date 			NOT NULL,
-	dateSortie						date,
+	dateSortie						date			NOT NULL,
 	paiementSortie					DECIMAL(4,2)	NOT NULL,
 	paiementRecu					BIT				NOT NULL,
 	numVehicule						INT 			NOT NULL,
