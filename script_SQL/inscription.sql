@@ -15,5 +15,17 @@ BEGIN CATCH
 	END CATCH
 
 END
+DECLARE @reponse NVARCHAR(250);
+EXEC dbo.ajout_utilisateur
+	@noUtilisateur = 1,
+	@nom = 'benoit',
+	@prenom = 'benoit',
+	@ville = 'chicoutimi',
+	@pays = 'canada',
+	@email = 'benoit@benoit.ca',
+	@motDePasseChiffre = 'secret',
+	@reponse = @reponse OUTPUT;
+
+SELECT @reponse as N'@message de réponse';
 
 	

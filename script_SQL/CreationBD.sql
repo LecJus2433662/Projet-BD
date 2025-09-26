@@ -36,7 +36,7 @@ CREATE TABLE capteur
 (
 	numCapteur		INT				NOT NULL		IDENTITY(1,1),
 	mouvement		Decimal(4,2)	NOT NULL,
-	date			date			NOT NULL,
+	dates			date			NOT NULL,
 	PRIMARY KEY (numCapteur)
 );
 
