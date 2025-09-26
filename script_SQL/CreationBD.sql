@@ -71,7 +71,6 @@ CREATE TABLE stationnementEntreeSortie
 	numVehicule						INT 			NOT NULL,
 	numBarriere						INT 			NOT NULL,
 	numUtilisateur					INT 			NOT NULL,
-	reservation						BIT,
+	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
 );	
-
