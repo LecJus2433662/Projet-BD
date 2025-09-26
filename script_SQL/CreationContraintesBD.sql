@@ -31,7 +31,7 @@ UNIQUE (email);
 /*ADD CHECK*/
 
 ALTER TABLE stationnementEntreeSortie
-ADD CONSTRAINT chk_dates CHECK (dateSortie IS NULL OR dateSortie > dateEntree);
+ADD CONSTRAINT chk_dates CHECK (dateSortie IS NULL OR dateSortie >= dateEntree);
 
 /*ADD Default*/
 ALTER TABLE stationnementEntreeSortie

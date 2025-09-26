@@ -45,7 +45,7 @@ CREATE TABLE stationnement
 	numStationnement			INT				NOT NULL		IDENTITY(1,1),
 	nombrePlaceMax				INT				NOT NULL,
 	dureeMaxStationnement		time			NOT NULL,
-	entreSortieStationnement	INT				NOT NULL,
+	entreSortieStationnement	INT				 NULL,
 	tarif 						DECIMAL(4,2)	NOT NULL,
 	estPlein					BIT,
 	PRIMARY KEY (numStationnement)
@@ -69,8 +69,8 @@ CREATE TABLE stationnementEntreeSortie
 	paiementSortie					DECIMAL(4,2)	NOT NULL,
 	paiementRecu					BIT				NOT NULL,
 	numVehicule						INT 			 NULL,
-	numBarriere						INT 			NOT NULL,
-	numUtilisateur					INT 			NOT NULL,
+	numBarriere						INT 			 NULL,
+	numUtilisateur					INT 			 NULL,
 	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
 );	
