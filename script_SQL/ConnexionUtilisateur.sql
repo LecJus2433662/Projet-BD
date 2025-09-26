@@ -1,17 +1,31 @@
 CREATE PROCEDURE Connexionutilisateur
-	@Email NVARCHAR(100),
-	@MotDePasse NVARCHAR(100)
+    @Email NVARCHAR(100),
+    @MotDePasse NVARCHAR(250)
 AS
-	BEGIN
-		DECLARE @Id int;
-		SELECT @Id = noUtilisateur
-		FROM utilisateur
-		WHERE @Email = email
-		AND motDePasse = HASHBYTES('SHA2_256', @MotDePasse);
+BEGIN
+    SET NOCOUNT ON;
 
-		IF @Id IS NULL
-			SELECT -1 AS Resultat;
-		ELSE
-			SELECT @Id AS Resultat;
-	END
-Go
+    DECLARE @Id INT;
+    DECLARE @sel UNIQUEIDENTIFIER;
+    DECLARE @hash VARBINARY(64);
+
+    SELECT @sel = sel FROM utilisateur WHERE email = @Email;
+
+    IF @sel IS NULL
+    BEGIN
+        SELECT -1 AS Resultat; 
+        RETURN;
+    END
+
+    SET @hash = HASHBYTES('SHA2_256', @MotDePasse + CAST(@sel AS NVARCHAR(36)));
+
+    SELECT @Id = noUtilisateur
+    FROM utilisateur
+    WHERE email = @Email AND motDePasse = @hash;
+
+    IF @Id IS NULL
+        SELECT -1 AS Resultat; 
+    ELSE
+        SELECT @Id AS Resultat;
+END
+GO

@@ -24,6 +24,6 @@ SELECT
     b.tempsOuverture,
     c.numCapteur,
     c.mouvement,
-    c.date AS dateCapteur
+    c.dates AS dateCapteur
 FROM barriere b
 JOIN capteur c ON b.numeroCapteur = c.numCapteur;

@@ -68,7 +68,7 @@ CREATE TABLE stationnementEntreeSortie
 	dateSortie						date			NOT NULL,
 	paiementSortie					DECIMAL(4,2)	NOT NULL,
 	paiementRecu					BIT				NOT NULL,
-	numVehicule						INT 			NOT NULL,
+	numVehicule						INT 			 NULL,
 	numBarriere						INT 			NOT NULL,
 	numUtilisateur					INT 			NOT NULL,
 	reservation						BIT
