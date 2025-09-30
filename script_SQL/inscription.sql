@@ -9,31 +9,38 @@ CREATE PROCEDURE ajout_utilisateur(
     @pays varchar(30),
     @email varchar(255),
     @motDePasseChiffre varchar(255),
-    @reponse NVARCHAR(250) OUTPUT
+    @reponse int OUTPUT
 ) 
 AS
 BEGIN 
     SET NOCOUNT ON;
     DECLARE @sel UNIQUEIDENTIFIER = NEWID();
     BEGIN TRY
-        INSERT INTO utilisateur(nom, prenom, ville, pays, email, motDePasse, sel)
-        VALUES(@nom, @Prenom, @ville, @pays, @email, 
-               HASHBYTES('SHA2_512', @motDePasseChiffre + CAST(@sel AS NVARCHAR(36))), 
-               @sel);
 
-        SET @reponse = CAST((SELECT noUtilisateur 
-                             FROM utilisateur 
-                             WHERE motDePasse = HASHBYTES('SHA2_512', @motDePasseChiffre + CAST(@sel AS NVARCHAR(36)))
-                             AND email = @email) AS NVARCHAR(250));
+	if NOT EXISTS(select email from utilisateur where email = @email)
+		BEGIN
+
+			INSERT INTO utilisateur(nom, prenom, ville, pays, email, motDePasse, sel)
+			VALUES(@nom, @Prenom, @ville, @pays, @email, 
+				   HASHBYTES('SHA2_512', @motDePasseChiffre + CAST(@sel AS NVARCHAR(36))), 
+				   @sel);
+
+			SET @reponse = SCOPE_IDENTITY()
+		END
+	ELSE
+		BEGIN
+			set @reponse = -2;
+		END
+
     END TRY
     BEGIN CATCH
-        SET @reponse = N'mauvais mot de passe ou adresse courriel';
+        SET @reponse = -1;
     END CATCH
 END
 GO
 
--- Appel de la procédure (batch séparé)
-DECLARE @reponse NVARCHAR(250);
+-- Appel de la procédure
+DECLARE @reponse int;
 
 EXEC dbo.ajout_utilisateur
     @noUtilisateur = 1,
