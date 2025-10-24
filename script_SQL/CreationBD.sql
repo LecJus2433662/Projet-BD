@@ -4,13 +4,13 @@ USE Prog_A25_BD_Projet_Prog;
 
 CREATE TABLE utilisateur 
 (
-	noUtilisateur	INT				NOT NULL		IDENTITY(1,1),
-	nom				VARCHAR(30)		NOT NULL,
-	prenom			VARCHAR(30)		NOT NULL,
-	ville			VARCHAR(30)		NOT NULL,
-	pays			VARCHAR(30)		NOT NULL,
-	email			VARCHAR(255)	NOT NULL,
-	motDePasse		BINARY(64)	NOT NULL,
+	noUtilisateur	INT				 NOT NULL		IDENTITY(1,1),
+	nom				VARCHAR(30)		 NOT NULL,
+	prenom			VARCHAR(30)		 NOT NULL,
+	ville			VARCHAR(30)		 NOT NULL,
+	pays			VARCHAR(30)		 NOT NULL,
+	email			VARCHAR(255)	 NOT NULL,
+	motDePasse		BINARY(64)		 NOT NULL,
 	sel				UNIQUEIDENTIFIER NOT NULL,
 	PRIMARY KEY (noUtilisateur)
 );
@@ -38,7 +38,7 @@ CREATE TABLE stationnement
 	numStationnement			INT				NOT NULL		IDENTITY(1,1),
 	nombrePlaceMax				INT				NOT NULL,
 	dureeMaxStationnement		time			NOT NULL,
-	entreSortieStationnement	INT				 NULL,
+	entreSortieStationnement	INT				NULL,
 	tarif 						DECIMAL(4,2)	NOT NULL,
 	estPlein					BIT,
 	PRIMARY KEY (numStationnement)
@@ -61,9 +61,9 @@ CREATE TABLE stationnementEntreeSortie
 	dateSortie						date			NOT NULL,
 	paiementSortie					DECIMAL(4,2)	NOT NULL,
 	paiementRecu					BIT				NOT NULL,
-	numVehicule						INT 			 NULL,
-	numBarriere						INT 			 NULL,
-	numUtilisateur					INT 			 NULL,
+	numVehicule						INT 			NULL,
+	numBarriere						INT 			NULL,
+	numUtilisateur					INT 			NULL,
 	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
 );	
