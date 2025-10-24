@@ -1,4 +1,4 @@
-USE Prog_A25_BD_Projet
+USE Prog_A25_BD_Projet_Prog
 GO
 
 CREATE PROCEDURE ajout_utilisateur(
