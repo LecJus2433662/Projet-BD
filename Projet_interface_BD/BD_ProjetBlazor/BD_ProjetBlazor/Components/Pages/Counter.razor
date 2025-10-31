@@ -7,13 +7,30 @@
 
 <p role="status">Current count: @currentCount</p>
 
-<button class="btn btn-primary" @onclick="IncrementCount">Click me</button>
+<button class="btn btn-primary" @onclick="()=>currentCount++">Click me</button>
+*
+<div class="m-4">
+    <input type="text" @oninput="HandleInput" />
+    <p>@text</p>
+</div>
 
+<div style="border: 1px solid black;" @onmouseover="MouseOver">
+    <p>@showText</p>
+</div>
 @code {
     private int currentCount = 0;
-
+    string text = " ";
+    string showText = "";
     private void IncrementCount()
     {
         currentCount++;
+    }
+    private void HandleInput(ChangeEventArgs args)
+    {
+        text = (string)args.Value!;
+    }
+    private void MouseOver(MouseEventArgs args)
+    {
+        showText = "You are hovering over this text";
     }
 }
