@@ -1,5 +1,5 @@
 
-USE Prog_A25_BD_Projet_Prog;
+USE Prog_A25_BD_Projet;
 
 /* ADD Foreign Keys*/
 ALTER TABLE stationnement 

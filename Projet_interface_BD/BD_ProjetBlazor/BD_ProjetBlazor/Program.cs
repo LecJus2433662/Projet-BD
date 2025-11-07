@@ -1,5 +1,6 @@
 using BD_ProjetBlazor.Components;
 using BD_ProjetBlazor.Data;
+using BD_ProjetBlazor.Services;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,6 +10,7 @@ var constrBuilder =
 constrBuilder.Password = builder.Configuration["MDP"];
 builder.Services.AddPooledDbContextFactory<ProgA25BdProjetProgContext>(
     x => x.UseSqlServer(constrBuilder.ConnectionString));
+builder.Services.AddScoped<Requete_Info_mensuelles>();
 // Add services to the container.
     builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

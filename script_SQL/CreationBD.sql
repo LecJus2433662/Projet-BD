@@ -1,6 +1,12 @@
-CREATE DATABASE Prog_A25_BD_Projet_Prog;
+use master;
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Prog_A25_BD_Projet')
+BEGIN
+	ALTER DATABASE Prog_A25_BD_Projet SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+	DROP DATABASE Prog_A25_BD_Projet;
+END
+CREATE DATABASE Prog_A25_BD_Projet;
 GO
-USE Prog_A25_BD_Projet_Prog;
+USE Prog_A25_BD_Projet;
 
 CREATE TABLE utilisateur 
 (
