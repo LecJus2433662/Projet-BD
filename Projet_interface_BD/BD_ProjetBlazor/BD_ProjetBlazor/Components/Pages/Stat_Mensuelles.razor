@@ -2,14 +2,14 @@
 @attribute [StreamRendering]
 @inject Requete_Info_mensuelles Requete_Info_mensuelles
 
-<h3 class="text-center">Statistiques Mensuelles</h3>
 
 @if (stat_Mensuelles == null)
 {
-    <p><em>Chargement...</em></p>
+    <h4 class="text-center"><em>Chargement...</em></h4>
 }
 else
 {
+<h3 class="text-center">Statistiques Mensuelles</h3>
     <table class="table table-striped">
         <thead>
             <tr>

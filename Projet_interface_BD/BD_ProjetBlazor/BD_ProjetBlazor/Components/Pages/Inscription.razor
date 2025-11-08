@@ -1,5 +1,74 @@
-﻿@page "/Inscription"
-<h3>Inscription</h3>
-@code {
+﻿@page "/inscription"
+@attribute [StreamRendering]
+@inject Requete_inscriptions Requete_inscription
+<h3 class="text-center mb-4">Inscription</h3>
 
+<div class="container border rounded p-4" style="max-width: 600px;">
+    <header class="d-flex justify-content-between align-items-center mb-4 border-bottom pb-2">
+        <h5>Nom du site</h5>
+        <h5>Inscription</h5>
+    </header>
+
+    <EditForm Model="@utilisateur" OnValidSubmit="HandleSubmit">
+        <div class="mb-3">
+            <label for="courriel" class="form-label">Courriel:</label>
+            <InputText id="courriel" class="form-control" @bind-Value="utilisateur.Courriel" />
+        </div>
+
+        <div class="mb-3">
+            <label for="motdepasse" class="form-label">Mot de passe:</label>
+            <InputText id="motdepasse" type="password" class="form-control" @bind-Value="utilisateur.MotDePasse" />
+        </div>
+
+        <div class="mb-3">
+            <label for="nom" class="form-label">Nom:</label>
+            <InputText id="nom" class="form-control" @bind-Value="utilisateur.Nom" />
+        </div>
+
+        <div class="mb-3">
+            <label for="prenom" class="form-label">Prénom:</label>
+            <InputText id="prenom" class="form-control" @bind-Value="utilisateur.Prenom" />
+        </div>
+
+        <div class="mb-3">
+            <label for="ville" class="form-label">Ville:</label>
+            <InputText id="ville" class="form-control" @bind-Value="utilisateur.Ville" />
+        </div>
+
+        <div class="d-flex align-items-center mb-3">
+            <label for="pays" class="form-label me-2 mb-0">Pays:</label>
+            <InputText id="pays" class="form-control me-3" style="width: 150px;" @bind-Value="utilisateur.Pays" />
+            <button type="submit" class="btn btn-primary">S'inscrire</button>
+        </div>
+
+        <div class="text-center mt-4">
+            <p>Vous avez un compte? <a href="/connexion">Appuyer sur "connecter"</a></p>
+        </div>
+    </EditForm>
+
+    <footer class="border-top mt-4 pt-3 text-center text-muted">
+        <small>tout droits réservées</small>
+    </footer>
+</div>
+
+@code {
+    private Utilisateur utilisateur = new();
+
+    private void HandleSubmit()
+    {
+        // Logique d'inscription à implémenter
+        Console.WriteLine($"Inscription de {utilisateur.Prenom} {utilisateur.Nom} ({utilisateur.Courriel})");
+    }
+    protected override async Task OnInitializedAsync()
+    {
+    }
+    public class Utilisateur
+    {
+        public string? Courriel { get; set; }
+        public string? MotDePasse { get; set; }
+        public string? Nom { get; set; }
+        public string? Prenom { get; set; }
+        public string? Ville { get; set; }
+        public string? Pays { get; set; }
+    }
 }
