@@ -11,6 +11,7 @@ constrBuilder.Password = builder.Configuration["MDP"];
 builder.Services.AddPooledDbContextFactory<ProgA25BdProjetProgContext>(
     x => x.UseSqlServer(constrBuilder.ConnectionString));
 builder.Services.AddScoped<Requete_Info_mensuelles>();
+builder.Services.AddScoped<Requete_EntreeSortieService>();
 builder.Services.AddScoped<Requete_inscriptions>();
 // Add services to the container.
     builder.Services.AddRazorComponents()

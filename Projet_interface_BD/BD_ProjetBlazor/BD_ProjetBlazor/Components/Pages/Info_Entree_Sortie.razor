@@ -1,6 +1,75 @@
 ﻿@page "/Info_Entree_Sortie"
-<h3>Info_Entree_Sortie</h3>
+@attribute [StreamRendering]
+@inject Requete_EntreeSortieService Requete_EntreeSortieService
 
+<h3 class="text-center">Bienvenue dans le stationnement de Jusnder </h3>
+
+<div class="container mt-5">
+    <div class="row">
+        <!-- Nombre total de stationnements -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Nombre Total de Stationnements</h5>
+                    <p class="card-text">@TotalParkingSpaces</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nombre de réservations -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Réservations Actuelles</h5>
+                    <p class="card-text">@TotalReservations</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Nombre de places libres -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Places Libres</h5>
+                    <p class="card-text">@AvailableSpaces</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pourcentage de places occupées -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Places Occupées (%)</h5>
+                    <p class="card-text">@OccupiedPercentage %</p>
+                </div>
+            </div>
+        </div>
+        <!-- tarif actuelle -->
+        <div class="col-lg-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">Tarif actuel</h5>
+                    <p class="card-text">@TarifActuel</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 @code {
 
+    private int TotalParkingSpaces;
+    private int TotalReservations;
+    private int AvailableSpaces;
+    private double OccupiedPercentage;
+    private decimal TarifActuel;
+
+    protected override async Task OnInitializedAsync()
+    {
+        TotalParkingSpaces = await Requete_EntreeSortieService.GetTotalParkingSpacesAsync();
+        TotalReservations = await Requete_EntreeSortieService.GetTotalReservationsAsync();
+        AvailableSpaces = await Requete_EntreeSortieService.GetAvailableSpacesAsync();
+        OccupiedPercentage = await Requete_EntreeSortieService.GetOccupiedPercentageAsync();
+        TarifActuel = await Requete_EntreeSortieService.GetTarifActuel();
+    }
 }
