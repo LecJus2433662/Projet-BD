@@ -1,4 +1,4 @@
-USE Prog_A25_BD_Projet;
+USE Prog_A25_Bd_Projet_Prog;
 Go
 CREATE PROCEDURE ConnexionUtilisateur
     @Email NVARCHAR(100),
@@ -37,7 +37,7 @@ DECLARE @reponse INT;
 exec dbo.ConnexionUtilisateur
 	@Email = 'benoit@benoit.ca',
 	@MotDePasse = 'secret',
-	@Resulatat = @reponse OUTPUT;
+	@Resulat = @reponse OUTPUT;
 
 SELECT @reponse AS CodeReturn;
 

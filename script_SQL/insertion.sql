@@ -1,4 +1,5 @@
-USE Prog_A25_BD_Projet;
+USE Prog_A25_Bd_Projet;
+
 
 INSERT INTO vehicule(marque,modele,plaqueImmatriculation,couleur)
 	VALUES

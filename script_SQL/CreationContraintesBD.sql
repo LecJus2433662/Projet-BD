@@ -1,5 +1,5 @@
 
-USE Prog_A25_BD_Projet;
+USE Prog_A25_Bd_Projet_Prog;
 
 /* ADD Foreign Keys*/
 ALTER TABLE stationnement 
@@ -17,6 +17,7 @@ FOREIGN KEY (numVehicule) REFERENCES vehicule(numVehicule);
 ALTER TABLE stationnementEntreeSortie 
 ADD CONSTRAINT  fk_numBarriere
 FOREIGN KEY (numBarriere) REFERENCES barriere(numBarriere);
+
 
 /*ADD UNIQUE*/
 

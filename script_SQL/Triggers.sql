@@ -1,4 +1,4 @@
-USE Prog_A25_BD_Projet;
+USE Prog_A25_Bd_Projet_Prog;
 GO
 CREATE TRIGGER trg_VerifierPlaceStationnement 
 ON stationnementEntreeSortie 
