@@ -1,12 +1,12 @@
 use master;
-IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Prog_A25_BD_Projet')
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Prog_A25_Bd_Projet_Prog')
 BEGIN
-	ALTER DATABASE Prog_A25_BD_Projet SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-	DROP DATABASE Prog_A25_BD_Projet;
+	ALTER DATABASE Prog_A25_Bd_Projet_Prog SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+	DROP DATABASE Prog_A25_Bd_Projet_Prog;
 END
-CREATE DATABASE Prog_A25_BD_Projet;
+CREATE DATABASE Prog_A25_Bd_Projet_Prog;
 GO
-USE Prog_A25_BD_Projet;
+USE Prog_A25_Bd_Projet_Prog;
 
 CREATE TABLE utilisateur 
 (
@@ -34,7 +34,7 @@ CREATE TABLE vehicule
 CREATE TABLE capteur 
 (
 	numCapteur		INT				NOT NULL		IDENTITY(1,1),
-	mouvement		Decimal(4,2)	NOT NULL,
+	mouvement		Decimal(6,2)	NOT NULL,
 	dates			date			NOT NULL,
 	PRIMARY KEY (numCapteur)
 );
@@ -55,10 +55,13 @@ CREATE TABLE barriere
 	numBarriere				INT				NOT NULL		IDENTITY(1,1),
 	dureeAttente			INT				NOT NULL,
 	noBarriereOuverture		INT				NOT NULL,
-	tempsOuverture			TIME			NOT NULL,
+	tempsOuverture			float			NOT NULL,
 	numeroCapteur			INT				NOT NULL,
 	PRIMARY KEY (numBarriere)
 );
+ALTER TABLE barriere
+alter column tempsOuverture datetime null;
+
 
 CREATE TABLE stationnementEntreeSortie 
 (

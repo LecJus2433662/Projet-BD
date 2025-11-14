@@ -27,3 +27,5 @@ SELECT
     c.dates AS dateCapteur
 FROM barriere b
 JOIN capteur c ON b.numeroCapteur = c.numCapteur;
+SELECT * FROM barriere;
+
