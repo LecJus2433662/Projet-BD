@@ -1,6 +1,9 @@
+using BD_ProjetBlazor.Authentication;
 using BD_ProjetBlazor.Components;
 using BD_ProjetBlazor.Data;
 using BD_ProjetBlazor.Services;
+using Microsoft.AspNetCore.Components.Authorization;
+using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,8 +16,10 @@ builder.Services.AddPooledDbContextFactory<ProgA25BdProjetProgContext>(
 builder.Services.AddScoped<Requete_Info_mensuelles>();
 builder.Services.AddScoped<Requete_EntreeSortieService>();
 builder.Services.AddScoped<Requete_inscriptions>();
-// Add services to the container.
-    builder.Services.AddRazorComponents()
+builder.Services.AddScoped<ProtectedSessionStorage>();
+builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddAuthenticationCore();
+builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
 
 var app = builder.Build();
