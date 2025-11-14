@@ -1,4 +1,4 @@
-USE Prog_A25_Bd_Projet_Prog;
+USE Prog_A25_Bd_Projet;
 Go
 CREATE PROCEDURE ConnexionUtilisateur
     @Email NVARCHAR(100),

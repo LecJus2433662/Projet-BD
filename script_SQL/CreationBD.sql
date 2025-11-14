@@ -1,12 +1,12 @@
 use master;
-IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Prog_A25_Bd_Projet_Prog')
+IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Prog_A25_Bd_Projet')
 BEGIN
-	ALTER DATABASE Prog_A25_Bd_Projet_Prog SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-	DROP DATABASE Prog_A25_Bd_Projet_Prog;
+	ALTER DATABASE Prog_A25_Bd_Projet SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
+	DROP DATABASE Prog_A25_Bd_Projet;
 END
-CREATE DATABASE Prog_A25_Bd_Projet_Prog;
+CREATE DATABASE Prog_A25_Bd_Projet;
 GO
-USE Prog_A25_Bd_Projet_Prog;
+USE Prog_A25_Bd_Projet;
 
 CREATE TABLE utilisateur 
 (
@@ -45,7 +45,7 @@ CREATE TABLE stationnement
 	nombrePlaceMax				INT				NOT NULL,
 	dureeMaxStationnement		time			NOT NULL,
 	entreSortieStationnement	INT				NULL,
-	tarif 						DECIMAL(4,2)	NOT NULL,
+	tarif 						DECIMAL(6,2)	NOT NULL,
 	estPlein					BIT,
 	PRIMARY KEY (numStationnement)
 );
