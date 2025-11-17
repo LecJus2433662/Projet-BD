@@ -1,6 +1,7 @@
 ﻿using BD_ProjetBlazor.Data;
 using BD_ProjetBlazor.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -13,25 +14,20 @@ public class Requete_inscriptions
         _dbContextFactory = dbContextFactory;
     }
 
-    public async Task<List<Utilisateur>> GetInscriptions()
+    public async Task<List<Utilisateur>> GetInscriptions(string email)
     {
-        await using var _context = await _dbContextFactory.CreateDbContextAsync();
-        return await _context.Utilisateurs.ToListAsync();
+       var dbContext = _dbContextFactory.CreateDbContextAsync().Result;
+        var user = from u in dbContext.Utilisateurs
+                   where u.Email == email
+                  select u;
+        return await dbContext.Utilisateurs.ToListAsync();
+    }
+    public async Task<List<Utilisateur>> InsertUser()
+    {
+        var dbContext = _dbContextFactory.CreateDbContextAsync().Result;
+        
+                   
     }
 
-    public async Task AjouterUtilisateur(Utilisateur utilisateur, string motDePasse)
-    {
-        await using var _context = await _dbContextFactory.CreateDbContextAsync();
-
-        // Générer un sel aléatoire
-        utilisateur.Sel = Guid.NewGuid();
-
-        // Convertir le mot de passe en byte[] (BINARY(64)) avec SHA-256 + sel
-        using var sha256 = SHA256.Create();
-        byte[] passwordBytes = Encoding.UTF8.GetBytes(motDePasse + utilisateur.Sel.ToString());
-        utilisateur.MotDePasse = sha256.ComputeHash(passwordBytes);
-
-        _context.Utilisateurs.Add(utilisateur);
-        await _context.SaveChangesAsync();
-    }
+    
 }

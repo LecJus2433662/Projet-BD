@@ -1,45 +1,50 @@
 ﻿@page "/inscription"
+@attribute [StreamRendering]
 @inject Requete_inscriptions Requete_inscription
 
-<h3 class="text-center mb-4">Inscription</h3>
+<div style="background-color: #e0e0e0; min-height: 100vh; padding-top: 40px;">
 
-<div class="container border rounded p-4" style="max-width: 600px;">
-    <EditForm Model="@utilisateur" OnValidSubmit="HandleSubmit">
-        <DataAnnotationsValidator />
-        <ValidationSummary />
+    <h3 class="text-center mb-4">Inscription</h3>
 
-        <div class="mb-3">
-            <label for="email">Courriel:</label>
-            <InputText id="email" class="form-control" @bind-Value="utilisateur.Email" />
-        </div>
+    <div class="container border rounded p-4 bg-white" style="max-width: 600px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+        <EditForm Model="@utilisateur" OnValidSubmit="HandleSubmit">
+            <DataAnnotationsValidator />
+            <ValidationSummary />
 
-        <div class="mb-3">
-            <label for="motdepasse">Mot de passe:</label>
-            <InputText id="motdepasse" type="password" class="form-control" @bind-Value="motDePasse" />
-        </div>
+            <div class="mb-3">
+                <label for="email">Courriel:</label>
+                <InputText id="email" class="form-control" @bind-Value="utilisateur.Email" />
+            </div>
 
-        <div class="mb-3">
-            <label for="nom">Nom:</label>
-            <InputText id="nom" class="form-control" @bind-Value="utilisateur.Nom" />
-        </div>
+            <div class="mb-3">
+                <label for="motdepasse">Mot de passe:</label>
+                <InputText id="motdepasse" type="password" class="form-control" @bind-Value="motDePasse" />
+            </div>
 
-        <div class="mb-3">
-            <label for="prenom">Prénom:</label>
-            <InputText id="prenom" class="form-control" @bind-Value="utilisateur.Prenom" />
-        </div>
+            <div class="mb-3">
+                <label for="nom">Nom:</label>
+                <InputText id="nom" class="form-control" @bind-Value="utilisateur.Nom" />
+            </div>
 
-        <div class="mb-3">
-            <label for="ville">Ville:</label>
-            <InputText id="ville" class="form-control" @bind-Value="utilisateur.Ville" />
-        </div>
+            <div class="mb-3">
+                <label for="prenom">Prénom:</label>
+                <InputText id="prenom" class="form-control" @bind-Value="utilisateur.Prenom" />
+            </div>
 
-        <div class="mb-3">
-            <label for="pays">Pays:</label>
-            <InputText id="pays" class="form-control" @bind-Value="utilisateur.Pays" />
-        </div>
+            <div class="mb-3">
+                <label for="ville">Ville:</label>
+                <InputText id="ville" class="form-control" @bind-Value="utilisateur.Ville" />
+            </div>
 
-        <button type="submit" class="btn btn-primary">S'inscrire</button>
-    </EditForm>
+            <div class="mb-3">
+                <label for="pays">Pays:</label>
+                <InputText id="pays" class="form-control" @bind-Value="utilisateur.Pays" />
+            </div>
+
+            <button type="submit" class="btn btn-primary">S'inscrire</button>
+        </EditForm>
+    </div>
+
 </div>
 
 @code {
@@ -49,9 +54,5 @@
     private async Task HandleSubmit()
     {
         await Requete_inscription.AjouterUtilisateur(utilisateur, motDePasse);
-
-        // Réinitialiser le formulaire après l'inscription
-        utilisateur = new();
-        motDePasse = "";
     }
 }
