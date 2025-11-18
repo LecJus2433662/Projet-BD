@@ -66,7 +66,7 @@ alter column tempsOuverture datetime null;
 CREATE TABLE stationnementEntreeSortie 
 (
 	entreSortieStationnement		INT				NOT NULL		IDENTITY(1,1),
-	dateEntree						date 			NOT NULL,
+	dateEntree						date			NOT NULL,
 	dateSortie						date			NOT NULL,
 	paiementSortie					DECIMAL(4,2)	NOT NULL,
 	paiementRecu					BIT				NOT NULL,
