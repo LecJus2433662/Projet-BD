@@ -1,37 +1,41 @@
-﻿using BD_ProjetBlazor.Data;
+﻿using Microsoft.EntityFrameworkCore;
+using BD_ProjetBlazor.Data;
 using BD_ProjetBlazor.Models;
-using Microsoft.EntityFrameworkCore;
-using System.Security.Cryptography;
-using System.Text;
 
-public class Requete_inscriptions
+namespace BD_ProjetBlazor.Services
 {
-    private readonly IDbContextFactory<ProgA25BdProjetProgContext> _dbContextFactory;
-
-    public Requete_inscriptions(IDbContextFactory<ProgA25BdProjetProgContext> dbContextFactory)
+    public class Requete_inscriptions
     {
-        _dbContextFactory = dbContextFactory;
-    }
+        private readonly IDbContextFactory<ProgA25BdProjetProgContext> _dbContextFactory;
 
-    public async Task<List<Utilisateur>> GetInscriptions()
-    {
-        await using var _context = await _dbContextFactory.CreateDbContextAsync();
-        return await _context.Utilisateurs.ToListAsync();
-    }
+        public Requete_inscriptions(
+            IDbContextFactory<ProgA25BdProjetProgContext> dbContextFactory)
+        {
+            _dbContextFactory = dbContextFactory;
+        }
+        public async Task AjouterUtilisateur(
+            string email,
+            byte[] motDePasse,
+            string prenom,
+            string nom,
+            string ville,
+            string pays)
+        {
+            var dbContext = await _dbContextFactory.CreateDbContextAsync();
 
-    public async Task AjouterUtilisateur(Utilisateur utilisateur, string motDePasse)
-    {
-        await using var _context = await _dbContextFactory.CreateDbContextAsync();
+            var utilisateur = new Utilisateur
+            {
+                Email = email,
+                MotDePasse = motDePasse,
+                Sel = Guid.NewGuid(),
+                Prenom = prenom,
+                Nom = nom,
+                Ville = ville,
+                Pays = pays
+            };
 
-        // Générer un sel aléatoire
-        utilisateur.Sel = Guid.NewGuid();
-
-        // Convertir le mot de passe en byte[] (BINARY(64)) avec SHA-256 + sel
-        using var sha256 = SHA256.Create();
-        byte[] passwordBytes = Encoding.UTF8.GetBytes(motDePasse + utilisateur.Sel.ToString());
-        utilisateur.MotDePasse = sha256.ComputeHash(passwordBytes);
-
-        _context.Utilisateurs.Add(utilisateur);
-        await _context.SaveChangesAsync();
+            dbContext.Utilisateurs.Add(utilisateur);
+            await dbContext.SaveChangesAsync();
+        }
     }
 }
