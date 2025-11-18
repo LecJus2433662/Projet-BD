@@ -1,58 +1,68 @@
 ﻿@page "/inscription"
+@using System.Text
 @attribute [StreamRendering]
+@rendermode InteractiveServer
 @inject Requete_inscriptions Requete_inscription
 
-<div style="background-color: #e0e0e0; min-height: 100vh; padding-top: 40px;">
-
-    <h3 class="text-center mb-4">Inscription</h3>
-
-    <div class="container border rounded p-4 bg-white" style="max-width: 600px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
-        <EditForm Model="@utilisateur" OnValidSubmit="HandleSubmit">
+<h3 class="text-center mb-4">Inscription</h3>
+@if (1 == 1)
+{
+    <div class="container border rounded p-4 bg-white" style="max-width: 600px;">
+        <EditForm Model="@model" OnValidSubmit="HandleSubmit" FormName="inscription">
             <DataAnnotationsValidator />
-            <ValidationSummary />
 
             <div class="mb-3">
-                <label for="email">Courriel:</label>
-                <InputText id="email" class="form-control" @bind-Value="utilisateur.Email" />
+                <label>Courriel:</label>
+                <InputText class="form-control" @bind-Value="model.Email" />
             </div>
 
             <div class="mb-3">
-                <label for="motdepasse">Mot de passe:</label>
-                <InputText id="motdepasse" type="password" class="form-control" @bind-Value="motDePasse" />
+                <label>Mot de passe:</label>
+                <InputText type="password" class="form-control" @bind-Value="model.MotDePasse" />
             </div>
 
             <div class="mb-3">
-                <label for="nom">Nom:</label>
-                <InputText id="nom" class="form-control" @bind-Value="utilisateur.Nom" />
+                <label>Nom:</label>
+                <InputText class="form-control" @bind-Value="model.Nom" />
             </div>
 
             <div class="mb-3">
-                <label for="prenom">Prénom:</label>
-                <InputText id="prenom" class="form-control" @bind-Value="utilisateur.Prenom" />
+                <label>Prénom:</label>
+                <InputText class="form-control" @bind-Value="model.Prenom" />
             </div>
 
             <div class="mb-3">
-                <label for="ville">Ville:</label>
-                <InputText id="ville" class="form-control" @bind-Value="utilisateur.Ville" />
+                <label>Ville:</label>
+                <InputText class="form-control" @bind-Value="model.Ville" />
             </div>
 
             <div class="mb-3">
-                <label for="pays">Pays:</label>
-                <InputText id="pays" class="form-control" @bind-Value="utilisateur.Pays" />
+                <label>Pays:</label>
+                <InputText class="form-control" @bind-Value="model.Pays" />
             </div>
 
-            <button type="submit" class="btn btn-primary">S'inscrire</button>
+            <button type="submit" class="btn btn-primary">
+                S'inscrire
+            </button>
         </EditForm>
+
     </div>
-
-</div>
-
+}
 @code {
-    private Utilisateur utilisateur = new();
-    private string motDePasse = "";
+    private ModelInscription model = new();
 
     private async Task HandleSubmit()
     {
-        await Requete_inscription.AjouterUtilisateur(utilisateur, motDePasse);
+        var passwordBytes = Encoding.UTF8.GetBytes(model.MotDePasse);
+
+        await Requete_inscription.AjouterUtilisateur(
+            model.Email,
+            passwordBytes,
+            model.Prenom,
+            model.Nom,
+            model.Ville,
+            model.Pays
+        );
+
     }
 }
