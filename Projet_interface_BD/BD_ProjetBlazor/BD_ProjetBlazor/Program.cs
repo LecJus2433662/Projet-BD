@@ -1,6 +1,7 @@
 using BD_ProjetBlazor.Authentication;
 using BD_ProjetBlazor.Components;
 using BD_ProjetBlazor.Data;
+using BD_ProjetBlazor.Partials;
 using BD_ProjetBlazor.Services;
 using Microsoft.AspNetCore.Components.Authorization;
 using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage;
@@ -20,6 +21,7 @@ builder.Services.AddScoped<Requete_Connexion>();
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<Requete_Reservation>();
+builder.Services.AddScoped<LoginForm>();
 builder.Services.AddAuthenticationCore();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();

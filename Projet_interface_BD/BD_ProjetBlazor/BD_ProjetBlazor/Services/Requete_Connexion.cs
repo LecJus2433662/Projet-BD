@@ -1,7 +1,9 @@
 ﻿using BD_ProjetBlazor.Data;
 using BD_ProjetBlazor.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.BlazorIdentity.Pages.Manage;
+using System.Data;
 
 public class Requete_Connexion
 {
@@ -24,5 +26,23 @@ public class Requete_Connexion
 
         // Connexion réussie
         return utilisateur;
+    }
+    public async Task<int> ConnecterUtilisateur(ProgA25BdProjetProgContext db, string email, string motPasse)
+    {
+            await using var _context = await _dbContextFactory.CreateDbContextAsync();
+
+            var emailParam = new SqlParameter("@Email", email);
+            var mdp = new SqlParameter("@MotDePasse", motPasse);
+            var reponseParam = new SqlParameter("@Reponse", SqlDbType.Int)
+            {
+                Direction = ParameterDirection.Output
+            };
+
+            await db.Database.ExecuteSqlRawAsync(
+                "EXEC ConnexionUtilisateur @Email, @MotDePasse, @Reponse OUTPUT",
+                emailParam, mdp, reponseParam
+                );
+
+            return reponseParam.Value == DBNull.Value ? -1 : (int)reponseParam.Value;
     }
 }

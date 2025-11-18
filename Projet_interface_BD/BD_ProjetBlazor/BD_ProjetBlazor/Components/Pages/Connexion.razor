@@ -1,8 +1,10 @@
 ﻿@page "/"
 @using BD_ProjetBlazor.Authentication
+@using BD_ProjetBlazor.Partials
 @using Microsoft.AspNetCore.Components.Authorization
 @inject Requete_Connexion ConnexionService
 @inject AuthenticationStateProvider authProvider
+@inject LoginForm LoginForm
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
@@ -69,13 +71,6 @@
 
         NavigationManager.NavigateTo("/Info_Entree_Sortie");
     }
-
-    public class LoginForm
-    {
-        public string Courriel { get; set; }
-        public string MotDePasse { get; set; }
-    }
-
     private void NavigateToSignUp()
     {
         NavigationManager.NavigateTo("/inscription");
