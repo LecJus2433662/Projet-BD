@@ -16,11 +16,15 @@ builder.Services.AddPooledDbContextFactory<ProgA25BdProjetProgContext>(
 builder.Services.AddScoped<Requete_Info_mensuelles>();
 builder.Services.AddScoped<Requete_EntreeSortieService>();
 builder.Services.AddScoped<Requete_inscriptions>();
+builder.Services.AddScoped<Requete_Connexion>();
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
+builder.Services.AddScoped<Requete_Reservation>();
 builder.Services.AddAuthenticationCore();
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents();
+
+
 
 var app = builder.Build();
 

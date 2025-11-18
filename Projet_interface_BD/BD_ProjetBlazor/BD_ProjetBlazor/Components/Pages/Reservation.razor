@@ -1,5 +1,74 @@
-﻿@page "/Reservation"
-<h3>Reservation</h3>
-@code {
+﻿@page "/reservation"
+@inject Requete_Reservation StationnementService
+@rendermode InteractiveServer
 
+<h3>Faire une Réservation de Stationnement</h3>
+
+<div class="container border rounded p-4" style="max-width: 600px;">
+    <EditForm Model="@form" OnValidSubmit="SubmitReservation" FormName="reservationForm">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div class="mb-3">
+            <label for="numStationnement">Numéro Stationnement:</label>
+            <InputNumber id="numStationnement" class="form-control" @bind-Value="form.NumStationnement" />
+        </div>
+
+        <div class="mb-3">
+            <label for="dateEntree">Date d'entrée</label>
+            <InputDate id="dateEntree" class="form-control" @bind-Value="form.dateEntree" />
+        </div>
+
+        <div class="mb-3">
+            <label for="dateSortie">Date de sortie</label>
+            <InputDate id="dateSortie" class="form-control" @bind-Value="form.dateSortie" />
+        </div>
+
+        <button type="submit" class="btn btn-primary">Réserver</button>
+    </EditForm>
+</div>
+@if (isReservationSuccessful != null)
+{
+    if (isReservationSuccessful.Value)
+    {
+        <div class="alert alert-success mt-3">Réservation réussie !</div>
+    }
+    else
+    {
+        <div class="alert alert-danger mt-3">Une erreur est survenue. Veuillez réessayer.</div>
+    }
+}
+
+@code {
+    private LoginForm form = new LoginForm();
+    private StationnementEntreeSortie reservation = new StationnementEntreeSortie();
+    private string message = "";
+    private bool? isReservationSuccessful;
+    private Stationnement isStationnementFull;
+
+    private async Task VerifierStatus()
+    { //ajouter les points pour debug (marche pas ici)
+        isStationnementFull = await StationnementService.IsParkingAvailableAsync(form.NumStationnement, form.dateEntree, form.dateSortie);
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        int placesDisponibles = await StationnementService.GetTotalReservationsAsync();
+    }
+
+    private async Task SubmitReservation()
+    {//verifier cette methode
+        isReservationSuccessful = await StationnementService.AjouterReservationAsync(reservation);
+    }
+
+    public class LoginForm
+    {
+        public int NumStationnement { get; set; }
+        public DateOnly dateEntree { get; set; }
+        public DateOnly dateSortie { get; set; }
+    }
+    //TODO Faire les roles admin et user
+    //TODO Verifier pour la page qui montre les reservations de user
+    //TODO Changer le nav menu bar en haut et le nom de project
+    //TODO Changer pour que l<utilisateur ne voix pas les pages si n est pas connecte 
 }

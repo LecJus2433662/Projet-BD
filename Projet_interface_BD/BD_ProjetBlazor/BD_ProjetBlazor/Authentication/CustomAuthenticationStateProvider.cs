@@ -61,7 +61,7 @@ namespace BD_ProjetBlazor.Authentication
                 await _sessionStorage.DeleteAsync("UserSession");
                 claimsPrincipal = _anonymous;
             }
-            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal))); 
         }
     }
 }
