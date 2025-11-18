@@ -51,6 +51,25 @@ EXEC dbo.ajout_utilisateur
     @email = 'benoit@benoit.ca',
     @motDePasseChiffre = 'secret',
     @reponse = @reponse OUTPUT;
+DECLARE @reponse int;
+EXEC dbo.ajout_utilisateur
+	@noUtilisateur = 2,
+    @nom = 'Leclerc',
+    @prenom = 'Justin',
+    @ville = 'chicoutimi',
+    @pays = 'canada',
+    @email = 'justin_admin@gmail.com',
+    @motDePasseChiffre = 'admin_Justin',
+    @reponse = @reponse OUTPUT;
 
+EXEC dbo.ajout_utilisateur
+	@noUtilisateur = 3,
+    @nom = 'Bilynets',
+    @prenom = 'Oleksandr',
+    @ville = 'Jonqueire ',
+    @pays = 'canada',
+    @email = 'alex_admin@gmail.com',
+    @motDePasseChiffre = 'admin_Alex',
+    @reponse = @reponse OUTPUT;
 SELECT @reponse as N'@message de réponse';
 select * from utilisateur;
