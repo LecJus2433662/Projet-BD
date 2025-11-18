@@ -1,8 +1,7 @@
 USE Prog_A25_Bd_Projet
 GO
-
+select * from utilisateur
 CREATE PROCEDURE ajout_utilisateur(
-    @noUtilisateur int,
     @nom varchar(30),
     @Prenom varchar(30),
     @ville varchar(30),
@@ -43,7 +42,6 @@ GO
 DECLARE @reponse int;
 
 EXEC dbo.ajout_utilisateur
-    @noUtilisateur = 1,
     @nom = 'benoit',
     @prenom = 'benoit',
     @ville = 'chicoutimi',
@@ -51,9 +49,8 @@ EXEC dbo.ajout_utilisateur
     @email = 'benoit@benoit.ca',
     @motDePasseChiffre = 'secret',
     @reponse = @reponse OUTPUT;
-DECLARE @reponse int;
+
 EXEC dbo.ajout_utilisateur
-	@noUtilisateur = 2,
     @nom = 'Leclerc',
     @prenom = 'Justin',
     @ville = 'chicoutimi',
@@ -63,7 +60,6 @@ EXEC dbo.ajout_utilisateur
     @reponse = @reponse OUTPUT;
 
 EXEC dbo.ajout_utilisateur
-	@noUtilisateur = 3,
     @nom = 'Bilynets',
     @prenom = 'Oleksandr',
     @ville = 'Jonqueire ',
@@ -72,4 +68,3 @@ EXEC dbo.ajout_utilisateur
     @motDePasseChiffre = 'admin_Alex',
     @reponse = @reponse OUTPUT;
 SELECT @reponse as N'@message de réponse';
-select * from utilisateur;
