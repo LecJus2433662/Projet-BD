@@ -17,10 +17,10 @@ public partial class Barriere
     public int DureeAttente { get; set; }
 
     [Column("noBarriereOuverture")]
-    public int NoBarriereOuverture { get; set; }
+    public int? NoBarriereOuverture { get; set; }
 
-    [Column("tempsOuverture")]
-    public TimeOnly TempsOuverture { get; set; }
+    [Column("tempsOuverture", TypeName = "datetime")]
+    public DateTime? TempsOuverture { get; set; }
 
     [Column("numeroCapteur")]
     public int NumeroCapteur { get; set; }

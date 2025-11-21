@@ -1,69 +1,118 @@
 ﻿@page "/inscription"
 @using System.Text
+@using BD_ProjetBlazor.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
 @attribute [StreamRendering]
 @rendermode InteractiveServer
 @inject Requete_inscriptions Requete_inscription
 @inject NavigationManager NavigationManager
+@inject AuthenticationStateProvider AuthProvider
+
+<style>
+    :root body {
+        background-color: grey;
+    }
+</style>
 
 <h3 class="text-center mb-4">Inscription</h3>
-@if (1 == 1)
-{
-    <div class="container border rounded p-4 bg-white" style="max-width: 600px;">
-        <EditForm Model="@model" OnValidSubmit="HandleSubmit" FormName="inscription">
-            <DataAnnotationsValidator />
 
-            <div class="mb-3">
-                <label>Courriel:</label>
-                <InputText class="form-control" @bind-Value="model.Email" />
-            </div>
+<div class="container border rounded p-4 bg-white" style="max-width: 600px;">
+    <EditForm Model="@model" OnValidSubmit="HandleSubmit" FormName="inscription">
+        <DataAnnotationsValidator />
+        <ValidationSummary class="text-danger" />
 
-            <div class="mb-3">
-                <label>Mot de passe:</label>
-                <InputText type="password" class="form-control" @bind-Value="model.MotDePasse" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Courriel :</label>
+            <InputText class="form-control" @bind-Value="model.Email" />
+        </div>
 
-            <div class="mb-3">
-                <label>Nom:</label>
-                <InputText class="form-control" @bind-Value="model.Nom" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Mot de passe :</label>
+            <InputText type="password" class="form-control" @bind-Value="model.MotDePasse" />
+        </div>
 
-            <div class="mb-3">
-                <label>Prénom:</label>
-                <InputText class="form-control" @bind-Value="model.Prenom" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Prénom :</label>
+            <InputText class="form-control" @bind-Value="model.Prenom" />
+        </div>
 
-            <div class="mb-3">
-                <label>Ville:</label>
-                <InputText class="form-control" @bind-Value="model.Ville" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Nom :</label>
+            <InputText class="form-control" @bind-Value="model.Nom" />
+        </div>
 
-            <div class="mb-3">
-                <label>Pays:</label>
-                <InputText class="form-control" @bind-Value="model.Pays" />
-            </div>
+        <div class="mb-3">
+            <label class="form-label">Ville :</label>
+            <InputText class="form-control" @bind-Value="model.Ville" />
+        </div>
 
-            <button type="submit" class="btn btn-primary">
-                S'inscrire
-            </button>
-        </EditForm>
+        <div class="mb-3">
+            <label class="form-label">Pays :</label>
+            <InputText class="form-control" @bind-Value="model.Pays" />
+        </div>
 
-    </div>
-}
+        <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
+    </EditForm>
+
+    @if (!string.IsNullOrEmpty(Message))
+    {
+        <div class="alert @AlertClass mt-3">@Message</div>
+    }
+</div>
+
 @code {
     private ModelInscription model = new();
+    private string Message = "";
+    private string AlertClass = "";
 
     private async Task HandleSubmit()
     {
-        var passwordBytes = Encoding.UTF8.GetBytes(model.MotDePasse);
+        try
+        {
+            // 1. Add user to the database
+            var passwordBytes = Encoding.UTF8.GetBytes(model.MotDePasse);
+            var success = await Requete_inscription.AjouterUtilisateur(
+                model.Email,
+                passwordBytes,
+                model.Prenom,
+                model.Nom,
+                model.Ville,
+                model.Pays
+            );
 
-        await Requete_inscription.AjouterUtilisateur(
-            model.Email,
-            passwordBytes,
-            model.Prenom,
-            model.Nom,
-            model.Ville,
-            model.Pays
-        );
-        NavigationManager.NavigateTo("/Info_Entree_Sortie");
+            if (success != 1)
+            {
+                Message = "Erreur lors de l'inscription. Ce courriel existe peut-être déjà.";
+                AlertClass = "alert-danger";
+                return;
+            }
+
+            // 2. Log the user in automatically
+            var userSession = new UserSession
+            {
+                nomUtilisateur = model.Prenom,        // or use model.Email if you prefer
+                role = "User"                         // or "Admin" if it's a special case
+            };
+
+            // Cast to your custom provider and update session
+            var customAuth = (CustomAuthenticationStateProvider)AuthProvider;
+            await customAuth.UpdateAuthenticationState(userSession);
+
+            // Optional: small delay to make sure the state is updated
+            await Task.Delay(100);
+
+            Message = "Inscription réussie ! Bienvenue !";
+            AlertClass = "alert-success";
+
+            // 3. Redirect to the desired page (or home)
+            NavigationManager.NavigateTo("/Info_Entree_Sortie", forceLoad: false);
+        }
+        catch (Exception ex)
+        {
+            Message = "Une erreur est survenue : " + ex.Message;
+            AlertClass = "alert-danger";
+        }
     }
+
+   
 }

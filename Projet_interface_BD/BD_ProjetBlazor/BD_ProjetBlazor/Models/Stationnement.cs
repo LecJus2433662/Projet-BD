@@ -22,8 +22,8 @@ public partial class Stationnement
     [Column("entreSortieStationnement")]
     public int? EntreSortieStationnement { get; set; }
 
-    [Column("tarif", TypeName = "decimal(4, 2)")]
-    public decimal Tarif { get; set; }
+    [Column("tarif", TypeName = "decimal(6, 2)")]
+    public decimal? Tarif { get; set; }
 
     [Column("estPlein")]
     public bool? EstPlein { get; set; }

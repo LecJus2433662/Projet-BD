@@ -1,6 +1,5 @@
 USE Prog_A25_Bd_Projet
 GO
-select * from utilisateur
 CREATE PROCEDURE ajout_utilisateur(
     @nom varchar(30),
     @Prenom varchar(30),
@@ -39,6 +38,7 @@ END
 GO
 
 -- Appel de la procédure
+
 DECLARE @reponse int;
 
 EXEC dbo.ajout_utilisateur

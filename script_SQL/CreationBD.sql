@@ -77,3 +77,4 @@ CREATE TABLE stationnementEntreeSortie
 	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
 );	
+select * from barriere;
