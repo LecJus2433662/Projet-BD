@@ -1,5 +1,21 @@
 ﻿@page "/Panier_paiement"
-<h3>Panier_paiement</h3>
-@code {
+@using Microsoft.AspNetCore.Authorization
+@using Microsoft.AspNetCore.Components.Authorization
+@attribute [Authorize(Roles = "Admin")]
 
+<h3>Page Admin - Seul les admins voient ça</h3>
+
+@code {
+    // You can also get current user like this:
+    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await AuthState;
+        var user = authState.User;
+        if (user.Identity.IsAuthenticated)
+        {
+            Console.WriteLine($"Connecté: {user.Identity.Name} - Role: {user.IsInRole("Admin")}");
+        }
+    }
 }

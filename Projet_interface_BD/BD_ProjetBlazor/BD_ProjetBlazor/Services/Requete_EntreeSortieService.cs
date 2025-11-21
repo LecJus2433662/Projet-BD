@@ -58,7 +58,7 @@ namespace BD_ProjetBlazor.Services
 
             if (stationnement != null)
             {
-                return stationnement.Tarif;  
+                return (decimal)stationnement.Tarif;  
             }
             else
             {

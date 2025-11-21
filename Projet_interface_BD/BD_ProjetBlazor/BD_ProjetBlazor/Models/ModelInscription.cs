@@ -8,5 +8,6 @@
         public string Prenom { get; set; }
         public string Ville { get; set; }
         public string Pays { get; set; }
+        public bool Admin { get; set; }
     }
 }
