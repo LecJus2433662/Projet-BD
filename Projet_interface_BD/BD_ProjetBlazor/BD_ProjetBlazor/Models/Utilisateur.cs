@@ -45,7 +45,4 @@ public partial class Utilisateur
 
     [Column("sel")]
     public Guid Sel { get; set; }
-
-    [Column("admin")]
-    public bool Admin { get; set; }
 }
