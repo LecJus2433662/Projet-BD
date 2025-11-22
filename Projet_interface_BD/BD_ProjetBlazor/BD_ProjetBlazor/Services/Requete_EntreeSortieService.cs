@@ -51,7 +51,7 @@ namespace BD_ProjetBlazor.Services
             return ((totalSpaces - availableSpaces) / (double)totalSpaces) * 100;
         }
 
-        public async Task<decimal> GetTarifActuel()
+        public async Task<decimal?> GetTarifActuel()
         {
             using var _context = _dbContextFactory.CreateDbContext();
             var stationnement = await _context.Stationnements.FirstOrDefaultAsync();
