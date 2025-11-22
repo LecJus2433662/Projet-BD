@@ -32,10 +32,7 @@ public partial class ProgA25BdProjetProgContext : DbContext
 
     public virtual DbSet<VueStationnementsVehicule> VueStationnementsVehicules { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Data Source=dicjwin01.cegepjonquiere.ca;Initial Catalog=Prog_A25_BD_Projet_Prog;MultipleActiveResultSets=true;User Id=prog3e02;Password=langue27");
-
+    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Barriere>(entity =>
@@ -75,7 +72,6 @@ public partial class ProgA25BdProjetProgContext : DbContext
         {
             entity.HasKey(e => e.NoUtilisateur).HasName("PK__utilisat__CB66E30B74294CDE");
 
-            entity.Property(e => e.Admin).HasDefaultValue(true);
             entity.Property(e => e.MotDePasse).IsFixedLength();
         });
 

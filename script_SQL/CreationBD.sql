@@ -6,9 +6,11 @@ BEGIN
 END
 CREATE DATABASE Prog_A25_Bd_Projet;
 GO
-USE Prog_A25_BD_Projet;
+
+USE Prog_A25_BD_Projet_Prog;
 
 
+GO
 CREATE TABLE utilisateur 
 (
 	noUtilisateur	INT				 NOT NULL		IDENTITY(1,1),
