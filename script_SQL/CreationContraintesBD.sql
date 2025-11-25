@@ -18,6 +18,10 @@ ALTER TABLE stationnementEntreeSortie
 ADD CONSTRAINT  fk_numBarriere
 FOREIGN KEY (numBarriere) REFERENCES barriere(numBarriere);
 
+ALTER TABLE stationnementEntreeSortie 
+ADD CONSTRAINT  fk_numStationnement
+FOREIGN KEY (numStationnement) REFERENCES stationnement(numStationnement);
+
 
 /*ADD UNIQUE*/
 

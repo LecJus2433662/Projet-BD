@@ -1,4 +1,4 @@
-USE Prog_A25_Bd_Projet
+USE Prog_A25_Bd_Projet;
 GO
 CREATE PROCEDURE ajout_utilisateur(
     @nom varchar(30),
@@ -68,3 +68,4 @@ EXEC dbo.ajout_utilisateur
     @motDePasseChiffre = 'admin_Alex',
     @reponse = @reponse OUTPUT;
 SELECT @reponse as N'@message de réponse';
+select * from utilisateur;

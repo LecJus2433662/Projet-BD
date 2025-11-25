@@ -34,6 +34,9 @@ public partial class StationnementEntreeSortie
     [Column("numUtilisateur")]
     public int? NumUtilisateur { get; set; }
 
+    [Column("numStationnement")]
+    public int? NumStationnement { get; set; }
+
     [Column("reservation")]
     public bool? Reservation { get; set; }
 

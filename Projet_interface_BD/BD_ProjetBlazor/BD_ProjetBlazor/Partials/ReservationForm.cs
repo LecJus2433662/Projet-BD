@@ -1,0 +1,9 @@
+﻿namespace BD_ProjetBlazor.Partials
+{
+    public class ReservationForm
+    {
+        public int NumStationnement { get; set; }
+        public DateOnly dateEntree { get; set; }
+        public DateOnly dateSortie { get; set; }
+    }
+}

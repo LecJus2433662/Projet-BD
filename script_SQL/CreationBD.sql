@@ -7,7 +7,7 @@ END
 CREATE DATABASE Prog_A25_Bd_Projet;
 GO
 
-USE Prog_A25_BD_Projet_Prog;
+USE Prog_A25_BD_Projet;
 
 
 GO
@@ -23,7 +23,9 @@ CREATE TABLE utilisateur
 	sel				UNIQUEIDENTIFIER NOT NULL,
 	PRIMARY KEY (noUtilisateur)
 );
-
+ALTER TABLE utilisateur
+ADD userRole VARCHAR(10) NULL
+    CONSTRAINT DF_utilisateur_userRole DEFAULT 'user';
 CREATE TABLE vehicule 
 (
 	numVehicule						INT				NOT NULL		IDENTITY(1,1),
@@ -62,8 +64,6 @@ CREATE TABLE barriere
 	numeroCapteur			INT				NOT NULL,
 	PRIMARY KEY (numBarriere)
 );
-ALTER TABLE barriere
-alter column tempsOuverture datetime null;
 
 
 CREATE TABLE stationnementEntreeSortie 
@@ -76,7 +76,7 @@ CREATE TABLE stationnementEntreeSortie
 	numVehicule						INT 			NULL,
 	numBarriere						INT 			NULL,
 	numUtilisateur					INT 			NULL,
+	numStationnement				INT				NULL,
 	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
 );	
-select * from barriere;

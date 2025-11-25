@@ -1,17 +1,25 @@
 ﻿@page "/reservation"
+@using BD_ProjetBlazor.Partials
 @inject Requete_Reservation StationnementService
+@inject NavigationManager NavigationManager
 @rendermode InteractiveServer
 
 <h3>Faire une Réservation de Stationnement</h3>
 
 <div class="container border rounded p-4" style="max-width: 600px;">
-    <EditForm Model="@form" OnValidSubmit="SubmitReservation" FormName="reservationForm">
+    <EditForm Model="@form" OnValidSubmit="FaireReservation" FormName="reservationForm">
         <DataAnnotationsValidator />
         <ValidationSummary />
 
-        <div class="mb-3">
-            <label for="numStationnement">Numéro Stationnement:</label>
-            <InputNumber id="numStationnement" class="form-control" @bind-Value="form.NumStationnement" />
+        <div class="form-group">
+            <label for="stationnement">Stationnement :</label>
+            <select id="stationnement" class="form-control" @bind="form.NumStationnement">
+                <option value="">Choisir un stationnement</option>
+                @foreach (var stationnement in availableStationnements)
+                {
+                    <option value="@stationnement.NumStationnement">@stationnement.NumStationnement</option>
+                }
+            </select>
         </div>
 
         <div class="mb-3">
@@ -24,52 +32,102 @@
             <InputDate id="dateSortie" class="form-control" @bind-Value="form.dateSortie" />
         </div>
 
+        <div class="form-group">
+            <label>Montant à payer :</label>
+            <input class="form-control" value="@montantAPayer" readonly />
+        </div>
+
         <button type="submit" class="btn btn-primary">Réserver</button>
     </EditForm>
 </div>
-@if (isReservationSuccessful != null)
+@if (!string.IsNullOrEmpty(message))
 {
-    if (isReservationSuccessful.Value)
-    {
-        <div class="alert alert-success mt-3">Réservation réussie !</div>
-    }
-    else
-    {
-        <div class="alert alert-danger mt-3">Une erreur est survenue. Veuillez réessayer.</div>
-    }
+    <div class="alert alert-info mt-3">
+        @message
+    </div>
 }
-
 @code {
-    private LoginForm form = new LoginForm();
+    private ReservationForm form = new ReservationForm();
     private StationnementEntreeSortie reservation = new StationnementEntreeSortie();
+    private List<Stationnement> availableStationnements = new List<Stationnement>();
     private string message = "";
-    private bool? isReservationSuccessful;
-    private Stationnement isStationnementFull;
+    private decimal? montantAPayer;
+    private DateOnly lastDateEntree;
+    private DateOnly lastDateSortie;
 
-    private async Task VerifierStatus()
-    { //ajouter les points pour debug (marche pas ici)
-        isStationnementFull = await StationnementService.IsParkingAvailableAsync(form.NumStationnement, form.dateEntree, form.dateSortie);
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        // On calcule toujours le montant si les dates sont valides
+        if (form.dateEntree != default && form.dateSortie != default && form.dateSortie >= form.dateEntree)
+        {
+            // Si la date de sortie est passée, on ignore et on prend au moins aujourd'hui
+            var startDate = form.dateEntree < DateOnly.FromDateTime(DateTime.Today)
+                            ? DateOnly.FromDateTime(DateTime.Today)
+                            : form.dateEntree;
+
+            var endDate = form.dateSortie < DateOnly.FromDateTime(DateTime.Today)
+                          ? DateOnly.FromDateTime(DateTime.Today)
+                          : form.dateSortie;
+
+            montantAPayer = await StationnementService.CalculerMontantAPayer(startDate, endDate);
+            StateHasChanged();
+        }
+        else
+        {
+            montantAPayer = 0;
+            StateHasChanged();
+        }
+
+        // Mettre à jour les dernières dates pour garder la logique si tu veux
+        lastDateEntree = form.dateEntree;
+        lastDateSortie = form.dateSortie;
     }
+
 
     protected override async Task OnInitializedAsync()
     {
-        int placesDisponibles = await StationnementService.GetTotalReservationsAsync();
+        availableStationnements = await StationnementService.GetAvailableStationnementsAsync(form.dateEntree, form.dateSortie);
     }
 
-    private async Task SubmitReservation()
-    {//verifier cette methode
-        isReservationSuccessful = await StationnementService.AjouterReservationAsync(reservation);
-    }
-
-    public class LoginForm
+    private async Task FaireReservation()
     {
-        public int NumStationnement { get; set; }
-        public DateOnly dateEntree { get; set; }
-        public DateOnly dateSortie { get; set; }
+        if (form.NumStationnement == 0)
+        {
+            message = "Veuillez choisir un stationnement.";
+            return;
+        }
+
+        var success = StationnementService.IsParkingAvailableAsync(form.NumStationnement, form.dateEntree, form.dateSortie);
+        if (success == null)
+        {
+            message = "Le stationnement n'est pas disponible pour cette période.";
+            return;
+        }
+
+
+        var reservation = new StationnementEntreeSortie
+        {
+            NumStationnement = form.NumStationnement,
+            DateEntree = form.dateEntree,
+            DateSortie = form.dateSortie,
+            Reservation = true
+        };
+
+        bool result = await StationnementService.AjouterReservationAsync(reservation);
+        if (result)
+        {
+            message = "Réservation réussie ! Vous allez maintenant être redirigé vers la page de paiement.";
+            await Task.Delay(1000);
+            //NavigationManager.NavigateTo("/page-de-paiement");
+        }
+        else
+        {
+            message = "Erreur lors de la réservation, veuillez réessayer.";
+        }
     }
     //TODO Faire les roles admin et user
     //TODO Verifier pour la page qui montre les reservations de user
     //TODO Changer le nav menu bar en haut et le nom de project
-    //TODO Changer pour que l<utilisateur ne voix pas les pages si n est pas connecte 
+    //TODO Changer pour que l<utilisateur ne voix pas les pages si n est pas connecte
     //TODO Modifier la bd, pour que utilisateur ait  le champ role(mettre le "user par default"), apres modifier la procedure inscription(donner "user par default") et apres faire les roles view
 }

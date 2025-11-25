@@ -45,4 +45,10 @@ public partial class Utilisateur
 
     [Column("sel")]
     public Guid Sel { get; set; }
+
+    [Column("userRole")]
+    [StringLength(10)]
+    [Unicode(false)]
+    public string userRole { get; set; } = "user";
+
 }

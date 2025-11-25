@@ -2,11 +2,23 @@
 @using BD_ProjetBlazor.Authentication
 @using BD_ProjetBlazor.Partials
 @using Microsoft.AspNetCore.Components.Authorization
+@* @inject UserAccountService userAccountService *@
 @inject Requete_Connexion ConnexionService
 @inject AuthenticationStateProvider authProvider
 @inject LoginForm LoginForm
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
+
+
+@* View
+<AuthorizeView>
+    <Authorized>
+        <h1>Bonjour, @context.User.Identity.Name!</h1>
+    </Authorized>
+    <NotAuthorized>
+        <h1>Bonjour, Visiteur!</h1>
+    </NotAuthorized>
+</AuthorizeView> *@
 
 <h3 class="text-center mb-4">Connexion</h3>
 
@@ -46,33 +58,41 @@
 
     private async Task Connecter()
     {
-        if (string.IsNullOrEmpty(form.Courriel) || string.IsNullOrEmpty(form.MotDePasse))
+        try
         {
-            message = "Veuillez remplir tous les champs.";
-            return;
+            if (string.IsNullOrEmpty(form.Courriel) || string.IsNullOrEmpty(form.MotDePasse))
+            {
+                message = "Veuillez remplir tous les champs.";
+                return;
+            }
+
+            var utilisateur = await ConnexionService.VerifierConnexion(form.Courriel, form.MotDePasse);
+
+            if (utilisateur == null)
+            {
+                message = "Identifiants incorrects.";
+                return;
+            }
+
+            var customAuthProvider = authProvider as CustomAuthenticationStateProvider;
+            await customAuthProvider.UpdateAuthenticationState(new Authentication.UserSession
+            {
+                nomUtilisateur = utilisateur.Prenom,
+                role = "User"
+            });
+
+            NavigationManager.NavigateTo("/Info_Entree_Sortie");
         }
-
-
-        var utilisateur = await ConnexionService.VerifierConnexion(form.Courriel, form.MotDePasse);
-
-        if (utilisateur == null)
+        catch(Exception ex)
         {
-            message = "Identifiants incorrects.";
-            return;
+            message = ex.Message;       // Affiche dans la page
+            Console.WriteLine(ex);      // Log console
         }
-
-        var customAuthProvider = authProvider as CustomAuthenticationStateProvider;
-        await customAuthProvider.UpdateAuthenticationState(new Authentication.UserSession
-        {
-            nomUtilisateur = utilisateur.Prenom,
-            role = "User"
-        });
-
-
-        NavigationManager.NavigateTo("/Info_Entree_Sortie");
     }
+
     private void NavigateToSignUp()
     {
         NavigationManager.NavigateTo("/inscription");
     }
+    
 }

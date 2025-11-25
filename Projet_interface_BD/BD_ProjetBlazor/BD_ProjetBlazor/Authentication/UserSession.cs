@@ -3,6 +3,6 @@
     public class UserSession
     {
         public string nomUtilisateur { get; set; }
-        public string role {  get; set; }
+        public string role { get; set; } 
     }
 }

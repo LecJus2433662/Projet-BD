@@ -17,6 +17,7 @@ FROM stationnementEntreeSortie ses
 JOIN vehicule v ON ses.numVehicule = v.numVehicule
 JOIN barriere b ON ses.numBarriere = b.numBarriere;
 GO
+
 CREATE VIEW vue_Barrieres_Capteurs AS
 SELECT 
     b.numBarriere,
@@ -27,5 +28,5 @@ SELECT
     c.dates AS dateCapteur
 FROM barriere b
 JOIN capteur c ON b.numeroCapteur = c.numCapteur;
-SELECT * FROM barriere;
+
 

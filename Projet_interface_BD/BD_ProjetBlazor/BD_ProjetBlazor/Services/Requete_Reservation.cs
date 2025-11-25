@@ -1,6 +1,7 @@
 ﻿using BD_ProjetBlazor.Components.Pages;
 using BD_ProjetBlazor.Data;
 using BD_ProjetBlazor.Models;
+using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
@@ -16,10 +17,49 @@ namespace BD_ProjetBlazor.Services
         {
             _dbContextFactory = dbContextFactory;
         }
-        public async Task<int> GetTotalReservationsAsync()
+
+        // Les fonctions
+
+        public async Task<int> GetTotalReservationsAsync(int stationnementId)
         {
             using var _context = _dbContextFactory.CreateDbContext();
-            return await Task.FromResult(_context.StationnementEntreeSorties.Count(r => r.Reservation == true));
+            var reservations = await _context.StationnementEntreeSorties
+                .Where(r => r.NumStationnement == stationnementId && r.Reservation == true)
+                .ToListAsync();
+            return reservations.Count;
+        }
+        public int CalculerNombreDeJours(DateOnly dateEntree, DateOnly dateSortie)
+        {
+            var difference = dateSortie.ToDateTime(new TimeOnly()) - dateEntree.ToDateTime(new TimeOnly());
+            return (int)difference.TotalDays;
+        }
+        public async Task<decimal?> GetTarifJournalierAsync()
+        {
+            using var _context = _dbContextFactory.CreateDbContext();
+
+            // Lire le tarif global (premier dans la table)
+            var stationnement = await _context.Stationnements.FirstOrDefaultAsync();
+
+            return stationnement?.Tarif ?? 0;
+        }
+
+        public async Task<decimal?> CalculerMontantAPayer(DateOnly dateEntree, DateOnly dateSortie)
+        {
+            using var _context = _dbContextFactory.CreateDbContext();
+
+            var tarif = await _context.Stationnements
+                .Select(s => s.Tarif)
+                .FirstOrDefaultAsync();
+
+            if (tarif <= 0) return 0;
+
+            // Calculer le nombre de jours minimum 1
+            int nbJours = (dateSortie.ToDateTime(TimeOnly.MinValue) - dateEntree.ToDateTime(TimeOnly.MinValue)).Days + 1;
+
+            if (nbJours < 1)
+                nbJours = 1;
+
+            return tarif * nbJours;
         }
         public async Task<Stationnement?> IsParkingAvailableAsync(int stationnementId, DateOnly startDateTime, DateOnly endDateTime)
         {
@@ -27,17 +67,15 @@ namespace BD_ProjetBlazor.Services
             using var _context = _dbContextFactory.CreateDbContext();
             var stationnement = await _context.Stationnements.FirstOrDefaultAsync();
             var numStationnement = await _context.Stationnements
-                .Where(r => r.NumStationnement == stationnementId)
-                .Where(p => p.NombrePlaceMax == placeMax)
-                .FirstOrDefaultAsync();
+                .FirstOrDefaultAsync(n => n.NumStationnement == stationnementId);
 
             if (numStationnement == null)
             {
                 return null;
             }
+            placeMax = numStationnement.NombrePlaceMax;
 
-
-            int totalReservations = await GetTotalReservationsAsync();
+            int totalReservations = await GetTotalReservationsAsync(stationnementId);
             if (placeMax > totalReservations)
             {
                 var verifierTemps = await _context.StationnementEntreeSorties
@@ -57,26 +95,57 @@ namespace BD_ProjetBlazor.Services
             using var _context = _dbContextFactory.CreateDbContext();
             try
             {
-                // Ajouter la réservation dans la table Stationnement
-                _context.StationnementEntreeSorties.Add(reservation);
-                await _context.SaveChangesAsync();
+                // Paramètres de la requête SQL
+                var paramNumStationnement = new SqlParameter("@numStationnement", reservation.NumStationnement);
+                var paramDateEntree = new SqlParameter("@dateEntree", reservation.DateEntree);
+                var paramDateSortie = new SqlParameter("@dateSortie", reservation.DateSortie);
+                var paramReservation = new SqlParameter("@reservation", reservation.Reservation);
 
-                return true;
+                // Exécuter la requête SQL brute
+                int rowsAffected = await _context.Database.ExecuteSqlRawAsync(
+                    "INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation) " +
+                    "VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation)",
+                    paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation);
+
+                // Si des lignes ont été affectées, cela signifie que l'insertion a réussi
+                return rowsAffected > 0;
             }
             catch (Exception ex)
             {
-                Console.WriteLine(ex.Message);
+                Console.WriteLine($"Erreur lors de l'ajout de la réservation : {ex.Message}");
                 return false;
             }
         }
 
-
-        public class Reservation
+        public async Task<List<Stationnement>> GetAvailableStationnementsAsync(DateOnly startDateTime, DateOnly endDateTime)
         {
-            public int NumStationnement { get; set; }
-            public DateOnly HeureDebut { get; set; }
-            public DateOnly HeureFin { get; set; }
+            using var _context = _dbContextFactory.CreateDbContext();
+
+            // Récupérer tous les stationnements
+            var stationnements = await _context.Stationnements.ToListAsync();
+
+            var availableStationnements = new List<Stationnement>();
+
+            foreach (var stationnement in stationnements)
+            {
+                var numStationnement = await _context.Stationnements
+                    .AnyAsync(n => n.NumStationnement == stationnement.NumStationnement);
+                // Vérifier si le stationnement est disponible pour les dates demandées
+                var reservationExistante = await _context.StationnementEntreeSorties
+                    .AnyAsync(r => r.DateEntree < endDateTime
+                                   && r.DateSortie > startDateTime);
+
+                // Si pas de réservation existante, le stationnement est disponible
+                if (!reservationExistante && numStationnement)
+                {
+                    availableStationnements.Add(stationnement);
+                }
+            }
+            Console.WriteLine($"Stationnements disponibles : {availableStationnements.Count}");
+            return availableStationnements;
         }
     }
 }
+
+
 

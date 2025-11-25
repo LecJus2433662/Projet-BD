@@ -1,8 +1,8 @@
-﻿USE Prog_A25_BD_Projet_Prog;
+﻿USE Prog_A25_Bd_Projet;
 GO
 
 
-CREATE PROCEDURE dbo.ConnexionUtilisateur
+CREATE PROCEDURE ConnexionUtilisateur
     @Email       NVARCHAR(100),
     @MotDePasse  NVARCHAR(250),
     @Resultat    INT OUTPUT
