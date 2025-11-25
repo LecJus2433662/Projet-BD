@@ -18,6 +18,7 @@ builder.Services.AddScoped<Requete_Info_mensuelles>();
 builder.Services.AddScoped<Requete_EntreeSortieService>();
 builder.Services.AddScoped<Requete_inscriptions>();
 builder.Services.AddScoped<Requete_Connexion>();
+builder.Services.AddScoped<Requete_Achat_Reservation>();
 builder.Services.AddScoped<ProtectedSessionStorage>();
 builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStateProvider>();
 builder.Services.AddScoped<Requete_Reservation>();

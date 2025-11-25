@@ -1,21 +1,73 @@
-﻿@page "/Panier_paiement"
-@using Microsoft.AspNetCore.Authorization
-@using Microsoft.AspNetCore.Components.Authorization
-@attribute [Authorize(Roles = "Admin")]
+﻿@page "/panier_paiement"
+@inject NavigationManager Nav
+@inject Requete_Achat_Reservation service
 
-<h3>Page Admin - Seul les admins voient ça</h3>
+<h3>Mes réservations</h3>
+
+@if (reservations == null)
+{
+    <p>Chargement des réservations...</p>
+}
+else if (!reservations.Any())
+{
+    <p>Aucune réservation trouvée.</p>
+}
+else
+{
+    <ul class="list-group mb-4">
+        @foreach (var r in reservations)
+        {
+            <li class="list-group-item d-flex justify-content-between">
+                <span>
+                    <b>ID:</b> @r.ReservationId —
+                    @r.DateEntree.ToShortDateString() → @r.DateSortie.ToShortDateString()
+                    (@r.Montant.ToString("C"))
+                </span>
+
+                <button class="btn btn-sm btn-secondary"
+                        @onclick="() => LoadReservation(r.ReservationId)">
+                    Voir
+                </button>
+            </li>
+        }
+    </ul>
+}
+
+@if (reservation != null)
+{
+    <h3>Résumé de la réservation</h3>
+
+    <p><b>Stationnement :</b> @reservation.NumStationnement</p>
+    <p><b>Entrée :</b> @reservation.DateEntree.ToShortDateString()</p>
+    <p><b>Sortie :</b> @reservation.DateSortie.ToShortDateString()</p>
+    <p><b>Total :</b> @reservation.Montant.ToString("C")</p>
+
+    <button class="btn btn-primary" @onclick="CreateCheckout">
+        Payer avec Stripe
+    </button>
+}
 
 @code {
-    // You can also get current user like this:
-    [CascadingParameter] private Task<AuthenticationState> AuthState { get; set; }
+    List<ReservationDTO>? reservations;
+    ReservationDTO? reservation;
 
     protected override async Task OnInitializedAsync()
     {
-        var authState = await AuthState;
-        var user = authState.User;
-        if (user.Identity.IsAuthenticated)
-        {
-            Console.WriteLine($"Connecté: {user.Identity.Name} - Role: {user.IsInRole("Admin")}");
-        }
+        reservations = await service.GetAllReservations();
+    }
+
+    async Task LoadReservation(int id)
+    {
+        reservation = await service.GetReservationFromDb(id);
+        StateHasChanged();
+    }
+
+    async Task CreateCheckout()
+    {
+        if (reservation == null)
+            return;
+
+        var url = await service.CreateStripeCheckout(reservation.ReservationId);
+        Nav.NavigateTo(url, forceLoad: true);
     }
 }

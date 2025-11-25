@@ -69,9 +69,9 @@
     {
         try
         {
-            // 1. Add user to the database
             var passwordBytes = Encoding.UTF8.GetBytes(model.MotDePasse);
-            var success = await Requete_inscription.AjouterUtilisateur(
+
+            var result = await Requete_inscription.AjouterUtilisateur(
                 model.Email,
                 passwordBytes,
                 model.Prenom,
@@ -80,37 +80,35 @@
                 model.Pays
             );
 
-            if (success != 1)
+            if (model != null)
             {
-                Message = "Erreur lors de l'inscription. Ce courriel existe peut-être déjà.";
-                AlertClass = "alert-danger";
-                return;
+                // Succès → connexion automatique
+                var userSession = new UserSession
+                {
+                    nomUtilisateur = model.Email,
+                    role = "User"
+                };
+
+                var customAuth = (CustomAuthenticationStateProvider)AuthProvider;
+                await customAuth.UpdateAuthenticationState(userSession);
+
+                Message = "Inscription réussie ! Bienvenue !";
+                AlertClass = "alert-success";
+
+                NavigationManager.NavigateTo("/Panier_paiement", forceLoad: false);
             }
-
-            // 2. Log the user in automatically
-            var userSession = new UserSession
+            
+            else
             {
-                nomUtilisateur = model.Prenom,        // or use model.Email if you prefer
-                role = "User"                         // or "Admin" if it's a special case
-            };
-
-            // Cast to your custom provider and update session
-            var customAuth = (CustomAuthenticationStateProvider)AuthProvider;
-            await customAuth.UpdateAuthenticationState(userSession);
-
-            // Optional: small delay to make sure the state is updated
-            await Task.Delay(100);
-
-            Message = "Inscription réussie ! Bienvenue !";
-            AlertClass = "alert-success";
-
-            // 3. Redirect to the desired page (or home)
-            NavigationManager.NavigateTo("/Panier_paiement", forceLoad: false);
+                Message = "Erreur lors de l'inscription. Veuillez réessayer.";
+                AlertClass = "alert-danger";
+            }
         }
         catch (Exception ex)
         {
-            Message = "Une erreur est survenue : " + ex.Message;
+            Message = "Une erreur inattendue est survenue.";
             AlertClass = "alert-danger";
+            // Optionnel : Logger l'erreur en prod
         }
     }
 
