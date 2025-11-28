@@ -1,16 +1,18 @@
 ﻿@page "/panier_paiement"
+@using Microsoft.AspNetCore.Components.Authorization
 @inject NavigationManager Nav
-@inject Requete_Achat_Reservation service
+@inject Requete_Achat_Reservation Service
+@inject AuthenticationStateProvider Auth
 
 <h3>Mes réservations</h3>
 
 @if (reservations == null)
 {
-    <p>Chargement des réservations...</p>
+    <p>Chargement...</p>
 }
 else if (!reservations.Any())
 {
-    <p>Aucune réservation trouvée.</p>
+    <p>Aucune réservation.</p>
 }
 else
 {
@@ -24,10 +26,17 @@ else
                     (@r.Montant.ToString("C"))
                 </span>
 
-                <button class="btn btn-sm btn-secondary"
-                        @onclick="() => LoadReservation(r.ReservationId)">
-                    Voir
-                </button>
+                <div>
+                    <button class="btn btn-sm btn-secondary me-1"
+                            @onclick="() => LoadReservation(r.ReservationId)">
+                        Voir
+                    </button>
+
+                    <button class="btn btn-sm btn-danger"
+                            @onclick="() => DeleteReservation(r.ReservationId)">
+                        Supprimer
+                    </button>
+                </div>
             </li>
         }
     </ul>
@@ -35,15 +44,14 @@ else
 
 @if (reservation != null)
 {
-    <h3>Résumé de la réservation</h3>
-
+    <h3>Résumé</h3>
     <p><b>Stationnement :</b> @reservation.NumStationnement</p>
     <p><b>Entrée :</b> @reservation.DateEntree.ToShortDateString()</p>
     <p><b>Sortie :</b> @reservation.DateSortie.ToShortDateString()</p>
     <p><b>Total :</b> @reservation.Montant.ToString("C")</p>
 
     <button class="btn btn-primary" @onclick="CreateCheckout">
-        Payer avec Stripe
+        Payer
     </button>
 }
 
@@ -53,21 +61,27 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        reservations = await service.GetAllReservations();
+        reservations = await Service.GetReservationsForUser();
     }
 
     async Task LoadReservation(int id)
     {
-        reservation = await service.GetReservationFromDb(id);
-        StateHasChanged();
+        reservation = await Service.GetReservationFromDb(id);
+    }
+
+    async Task DeleteReservation(int id)
+    {
+        if (await Service.DeleteReservation(id))
+        {
+            reservations = await Service.GetReservationsForUser();
+        }
     }
 
     async Task CreateCheckout()
     {
-        if (reservation == null)
-            return;
+        if (reservation == null) return;
 
-        var url = await service.CreateStripeCheckout(reservation.ReservationId);
+        var url = await Service.CreateStripeCheckout(reservation.ReservationId);
         Nav.NavigateTo(url, forceLoad: true);
     }
 }

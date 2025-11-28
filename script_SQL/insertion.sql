@@ -1,4 +1,4 @@
-USE Prog_A25_Bd_Projet;
+USE Prog_A25_BD_Projet_Prog;
 select * from utilisateur
 
 INSERT INTO vehicule(marque,modele,plaqueImmatriculation,couleur)

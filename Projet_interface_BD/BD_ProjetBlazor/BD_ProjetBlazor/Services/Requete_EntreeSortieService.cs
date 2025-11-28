@@ -34,7 +34,7 @@ namespace BD_ProjetBlazor.Services
         public async Task<int> GetTotalReservationsAsync()
         {
             using var _context = _dbContextFactory.CreateDbContext();
-            return await Task.FromResult(_context.StationnementEntreeSorties.Count(r => r.Reservation == true));
+            return await Task.FromResult(_context.StationnementEntreeSorties.Count());
         }
 
         public async Task<int> GetAvailableSpacesAsync()
