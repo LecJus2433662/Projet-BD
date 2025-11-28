@@ -18,7 +18,7 @@ public partial class VueStationnementsVehicule
     [Column("dateSortie")]
     public DateOnly DateSortie { get; set; }
 
-    [Column("paiementSortie", TypeName = "decimal(4, 2)")]
+    [Column("paiementSortie", TypeName = "decimal(6, 2)")]
     public decimal PaiementSortie { get; set; }
 
     [Column("paiementRecu")]

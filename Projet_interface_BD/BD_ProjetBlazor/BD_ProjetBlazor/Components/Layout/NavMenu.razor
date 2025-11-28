@@ -1,4 +1,11 @@
-﻿ <div class="top-row ps-3 navbar navbar-dark">
+﻿@using BD_ProjetBlazor.Authentication
+@using Microsoft.AspNetCore.Components.Authorization
+@using BD_ProjetBlazor.Services
+@rendermode InteractiveServer
+@inject AuthenticationStateProvider AuthStateProvider
+@inject NavigationManager navManager
+
+<div class="top-row ps-3 navbar navbar-dark">
     <div class="container-fluid">
         <a class="navbar-brand" href="">BD_ProjetBlazor</a>
     </div>
@@ -8,36 +15,79 @@
 
 <div class="nav-scrollable" onclick="document.querySelector('.navbar-toggler').click()">
     <nav class="flex-row">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Inscription">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Inscription
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href=""Match="NavLinkMatch.All">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Connexion
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Stat_Mensuelles">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Stat_Mensuelles
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Info_Entree_Sortie">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Info_Entree_Sortie
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Reservation">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Reservation
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="Panier_paiement">
-                <span class="bi bi-list-nested-nav-menu" aria-hidden="true"></span> Panier_paiement
-            </NavLink>
-        </div>
+        <AuthorizeView Roles="admin, user">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <button type="button"
+                            class="btn btn-outline-danger w-100 d-flex align-items-center justify-content-center gap-2 py-2"
+                            @onclick="Logout">
+                        <i class="bi bi-box-arrow-right fs-5"></i>
+                        Déconnexion
+                    </button>
+                </div>
+
+                <div class="nav-item px-3 mt-2">
+                    <div class="text-light small opacity-75">
+                        Connecté en tant que @context.User.Identity?.Name
+                    </div>
+                </div>
+                <hr class="border-secondary my-3" />
+            </Authorized>
+        </AuthorizeView>
+       
+        <AuthorizeView Roles="admin, user">
+            <NotAuthorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link d-flex align-items-center gap-2" href="">
+                        <i class="bi bi-person-circle fs-4" style="position: relative; top: -13px;"></i>
+                        <span>Connexion</span>
+                    </NavLink>
+                </div>
+            </NotAuthorized>
+        </AuthorizeView>
+        
+        <AuthorizeView Roles="user">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Reservation">
+                        <i class="bi bi-list-nested-nav-menu"></i> Reservation
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Panier_paiement">
+                        <i class="bi bi-list-nested-nav-menu"></i> Panier Paiement
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
+
+        <AuthorizeView Roles="admin,user">
+            <Authorized>
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Stat_Mensuelles">
+                        <i class="bi bi-list-nested-nav-menu"></i> Stat Mensuelles
+                    </NavLink>
+                </div>
+
+                <div class="nav-item px-3">
+                    <NavLink class="nav-link" href="Info_Entree_Sortie">
+                        <i class="bi bi-list-nested-nav-menu"></i> Info Entrée Sortie
+                    </NavLink>
+                </div>
+            </Authorized>
+        </AuthorizeView>
     </nav>
 </div>
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var authState = await ((CustomAuthenticationStateProvider)AuthStateProvider).GetAuthenticationStateAsync();
+    }
 
+    private async Task Logout()
+    {
+        await ((CustomAuthenticationStateProvider)AuthStateProvider).UpdateAuthenticationState(null);
+        navManager.NavigateTo("/", forceLoad: true);
+    }
+}

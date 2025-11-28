@@ -1,24 +1,12 @@
 ﻿@page "/"
 @using BD_ProjetBlazor.Authentication
 @using BD_ProjetBlazor.Partials
-@using Microsoft.AspNetCore.Components.Authorization
-@* @inject UserAccountService userAccountService *@
+@using Microsoft.AspNetCore.Components.Authorization 
 @inject Requete_Connexion ConnexionService
 @inject AuthenticationStateProvider authProvider
 @inject LoginForm LoginForm
 @inject NavigationManager NavigationManager
 @rendermode InteractiveServer
-
-
-@* View
-<AuthorizeView>
-    <Authorized>
-        <h1>Bonjour, @context.User.Identity.Name!</h1>
-    </Authorized>
-    <NotAuthorized>
-        <h1>Bonjour, Visiteur!</h1>
-    </NotAuthorized>
-</AuthorizeView> *@
 
 <h3 class="text-center mb-4">Connexion</h3>
 
@@ -75,11 +63,23 @@
             }
 
             var customAuthProvider = authProvider as CustomAuthenticationStateProvider;
-            await customAuthProvider.UpdateAuthenticationState(new Authentication.UserSession
+            if (utilisateur.IsAdmin == true)
             {
-                nomUtilisateur = utilisateur.Prenom,
-                role = "User"
-            });
+                await customAuthProvider.UpdateAuthenticationState(new Authentication.UserSession
+                {
+                    nomUtilisateur = utilisateur.Prenom,
+                    role = "admin"
+                });
+            }
+            else
+            {
+                await customAuthProvider.UpdateAuthenticationState(new Authentication.UserSession
+                {
+                    nomUtilisateur = utilisateur.Prenom,
+                    role = "user"
+                });
+            }
+           
 
             NavigationManager.NavigateTo("/Info_Entree_Sortie");
         }

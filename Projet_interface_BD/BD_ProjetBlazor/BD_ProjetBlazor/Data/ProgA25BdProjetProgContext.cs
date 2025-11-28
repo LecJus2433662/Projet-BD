@@ -32,12 +32,11 @@ public partial class ProgA25BdProjetProgContext : DbContext
 
     public virtual DbSet<VueStationnementsVehicule> VueStationnementsVehicules { get; set; }
 
-    
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Barriere>(entity =>
         {
-            entity.HasKey(e => e.NumBarriere).HasName("PK__barriere__5418E0DD3B7D7DEF");
+            entity.HasKey(e => e.NumBarriere).HasName("PK__barriere__5418E0DD7936B5ED");
 
             entity.HasOne(d => d.NumeroCapteurNavigation).WithMany(p => p.Barrieres)
                 .OnDelete(DeleteBehavior.ClientSetNull)
@@ -46,38 +45,42 @@ public partial class ProgA25BdProjetProgContext : DbContext
 
         modelBuilder.Entity<Capteur>(entity =>
         {
-            entity.HasKey(e => e.NumCapteur).HasName("PK__capteur__B87DDAAAB31E46A6");
+            entity.HasKey(e => e.NumCapteur).HasName("PK__capteur__B87DDAAA97190C17");
         });
 
         modelBuilder.Entity<Stationnement>(entity =>
         {
-            entity.HasKey(e => e.NumStationnement).HasName("PK__stationn__E316D9115F9BFC5A");
+            entity.HasKey(e => e.NumStationnement).HasName("PK__stationn__E316D911F68BE1B4");
 
             entity.HasOne(d => d.EntreSortieStationnementNavigation).WithMany(p => p.Stationnements).HasConstraintName("fk_entreSortieStationnement");
         });
 
         modelBuilder.Entity<StationnementEntreeSortie>(entity =>
         {
-            entity.HasKey(e => e.EntreSortieStationnement).HasName("PK__stationn__64A2E707811498FB");
+            entity.HasKey(e => e.EntreSortieStationnement).HasName("PK__stationn__64A2E70706E3536B");
+
+            entity.ToTable("stationnementEntreeSortie", tb => tb.HasTrigger("trg_VerifierPlaceStationnement"));
 
             entity.Property(e => e.DateEntree).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.Reservation).HasDefaultValue(false);
 
             entity.HasOne(d => d.NumBarriereNavigation).WithMany(p => p.StationnementEntreeSorties).HasConstraintName("fk_numBarriere");
 
+            entity.HasOne(d => d.NumStationnementNavigation).WithMany(p => p.StationnementEntreeSorties).HasConstraintName("fk_numStationnement");
+
             entity.HasOne(d => d.NumVehiculeNavigation).WithMany(p => p.StationnementEntreeSorties).HasConstraintName("fk_numVehicule");
         });
 
         modelBuilder.Entity<Utilisateur>(entity =>
         {
-            entity.HasKey(e => e.NoUtilisateur).HasName("PK__utilisat__CB66E30B74294CDE");
+            entity.HasKey(e => e.NoUtilisateur).HasName("PK__utilisat__CB66E30B3ECCE949");
 
             entity.Property(e => e.MotDePasse).IsFixedLength();
         });
 
         modelBuilder.Entity<Vehicule>(entity =>
         {
-            entity.HasKey(e => e.NumVehicule).HasName("PK__vehicule__1F9286B146A2863D");
+            entity.HasKey(e => e.NumVehicule).HasName("PK__vehicule__1F9286B10B7BE12D");
         });
 
         modelBuilder.Entity<VueBarrieresCapteur>(entity =>

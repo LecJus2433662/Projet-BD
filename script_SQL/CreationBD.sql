@@ -21,11 +21,9 @@ CREATE TABLE utilisateur
 	email			VARCHAR(255)	 NOT NULL,
 	motDePasse		BINARY(64)		 NOT NULL,
 	sel				UNIQUEIDENTIFIER NOT NULL,
+	IsAdmin			BIT				 NOT NULL,
 	PRIMARY KEY (noUtilisateur)
 );
-ALTER TABLE utilisateur
-ADD userRole VARCHAR(10) NULL
-    CONSTRAINT DF_utilisateur_userRole DEFAULT 'user';
 CREATE TABLE vehicule 
 (
 	numVehicule						INT				NOT NULL		IDENTITY(1,1),
@@ -60,7 +58,7 @@ CREATE TABLE barriere
 	numBarriere				INT				NOT NULL		IDENTITY(1,1),
 	dureeAttente			INT				NOT NULL,
 	noBarriereOuverture		INT				NOT NULL,
-	tempsOuverture			float			NOT NULL,
+	tempsOuverture			TIME			NOT NULL,
 	numeroCapteur			INT				NOT NULL,
 	PRIMARY KEY (numBarriere)
 );
@@ -71,7 +69,7 @@ CREATE TABLE stationnementEntreeSortie
 	entreSortieStationnement		INT				NOT NULL		IDENTITY(1,1),
 	dateEntree						date			NOT NULL,
 	dateSortie						date			NOT NULL,
-	paiementSortie					DECIMAL(4,2)	NOT NULL,
+	paiementSortie					DECIMAL(6,2)	NOT NULL,
 	paiementRecu					BIT				NOT NULL,
 	numVehicule						INT 			NULL,
 	numBarriere						INT 			NULL,
@@ -80,3 +78,4 @@ CREATE TABLE stationnementEntreeSortie
 	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
 );	
+select * from utilisateur 

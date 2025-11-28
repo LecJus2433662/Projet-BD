@@ -1,6 +1,6 @@
 USE Prog_A25_Bd_Projet;
 GO
-CREATE PROCEDURE ajout_utilisateur(
+CREATE PROCEDURE ajout_admin(
     @nom varchar(30),
     @Prenom varchar(30),
     @ville varchar(30),
@@ -21,7 +21,7 @@ BEGIN
 			INSERT INTO utilisateur(nom, prenom, ville, pays, email, motDePasse, sel, IsAdmin)
 			VALUES(@nom, @Prenom, @ville, @pays, @email, 
 				   HASHBYTES('SHA2_512', @motDePasseChiffre + CAST(@sel AS NVARCHAR(36))), 
-				   @sel, 0);
+				   @sel, 1);
 
 			SET @reponse = SCOPE_IDENTITY()
 		END
@@ -37,17 +37,25 @@ BEGIN
 END
 GO
 
--- Appel de la procédure
 
 DECLARE @reponse int;
 
-EXEC dbo.ajout_utilisateur
-    @nom = 'benoit',
-    @prenom = 'benoit',
+EXEC dbo.ajout_admin
+    @nom = 'Leclerc',
+    @prenom = 'Justin',
     @ville = 'chicoutimi',
     @pays = 'canada',
-    @email = 'benoit@benoit.ca',
-    @motDePasseChiffre = 'secret',
+    @email = 'justin_admin@gmail.com',
+    @motDePasseChiffre = 'admin_Justin',
+    @reponse = @reponse OUTPUT;
+
+EXEC dbo.ajout_admin
+    @nom = 'Bilynets',
+    @prenom = 'Oleksandr',
+    @ville = 'Jonqueire ',
+    @pays = 'canada',
+    @email = 'alex_admin@gmail.com',
+    @motDePasseChiffre = 'admin_Alex',
     @reponse = @reponse OUTPUT;
 SELECT @reponse as N'@message de réponse';
 select * from utilisateur;

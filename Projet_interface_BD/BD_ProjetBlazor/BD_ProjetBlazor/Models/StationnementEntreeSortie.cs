@@ -19,7 +19,7 @@ public partial class StationnementEntreeSortie
     [Column("dateSortie")]
     public DateOnly DateSortie { get; set; }
 
-    [Column("paiementSortie", TypeName = "decimal(4, 2)")]
+    [Column("paiementSortie", TypeName = "decimal(6, 2)")]
     public decimal PaiementSortie { get; set; }
 
     [Column("paiementRecu")]
@@ -43,6 +43,10 @@ public partial class StationnementEntreeSortie
     [ForeignKey("NumBarriere")]
     [InverseProperty("StationnementEntreeSorties")]
     public virtual Barriere? NumBarriereNavigation { get; set; }
+
+    [ForeignKey("NumStationnement")]
+    [InverseProperty("StationnementEntreeSorties")]
+    public virtual Stationnement? NumStationnementNavigation { get; set; }
 
     [ForeignKey("NumVehicule")]
     [InverseProperty("StationnementEntreeSorties")]

@@ -1,3 +1,5 @@
+USE Prog_A25_BD_Projet;
+GO
 CREATE VIEW vue_Stationnements_Vehicules AS
 SELECT 
     ses.entreSortieStationnement,

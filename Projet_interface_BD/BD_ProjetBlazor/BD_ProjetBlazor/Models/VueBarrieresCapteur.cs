@@ -21,7 +21,7 @@ public partial class VueBarrieresCapteur
     [Column("numCapteur")]
     public int NumCapteur { get; set; }
 
-    [Column("mouvement", TypeName = "decimal(4, 2)")]
+    [Column("mouvement", TypeName = "decimal(6, 2)")]
     public decimal Mouvement { get; set; }
 
     [Column("dateCapteur")]

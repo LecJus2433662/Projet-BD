@@ -23,7 +23,7 @@ public partial class Stationnement
     public int? EntreSortieStationnement { get; set; }
 
     [Column("tarif", TypeName = "decimal(6, 2)")]
-    public decimal? Tarif { get; set; }
+    public decimal Tarif { get; set; }
 
     [Column("estPlein")]
     public bool? EstPlein { get; set; }
@@ -31,4 +31,7 @@ public partial class Stationnement
     [ForeignKey("EntreSortieStationnement")]
     [InverseProperty("Stationnements")]
     public virtual StationnementEntreeSortie? EntreSortieStationnementNavigation { get; set; }
+
+    [InverseProperty("NumStationnementNavigation")]
+    public virtual ICollection<StationnementEntreeSortie> StationnementEntreeSorties { get; set; } = new List<StationnementEntreeSortie>();
 }

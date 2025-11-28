@@ -17,30 +17,43 @@ public class Requete_Connexion
 
     public async Task<Utilisateur?> VerifierConnexion(string courriel, string motDePasse)
     {
-        var db = await _dbContextFactory.CreateDbContextAsync();
-        int? noUtilisateur = await ConnecterUtilisateur(db, courriel, motDePasse);
-        return GetUtilisateur(db, noUtilisateur);
+        await using var _context = await _dbContextFactory.CreateDbContextAsync();
+        // Cherche l'utilisateur par courriel
+        var utilisateur = await _context.Utilisateurs
+            .FirstOrDefaultAsync(u => u.Email == courriel);
+
+        if (utilisateur == null)
+            return null;
+
+        var connecterUtilisateur = await ConnecterUtilisateur(_context, courriel, motDePasse);
+        if (connecterUtilisateur.resultat == -1)
+            return null;
+
+        // Connexion réussie
+        return utilisateur;
     }
-    public async Task<int> ConnecterUtilisateur(ProgA25BdProjetProgContext db, string email, string motPasse)
+    public async Task<(int resultat, bool isAdmin)> ConnecterUtilisateur(ProgA25BdProjetProgContext db, string email, string motPasse)
     {
+        await using var _context = await _dbContextFactory.CreateDbContextAsync();
+
         var emailParam = new SqlParameter("@Email", email);
         var mdp = new SqlParameter("@MotDePasse", motPasse);
-        var reponseParam = new SqlParameter("@Resultat", SqlDbType.Int);
-        reponseParam.Direction = ParameterDirection.Output;
-
+        var reponseParam = new SqlParameter("@Reponse", SqlDbType.Int)
+        {
+            Direction = ParameterDirection.Output
+        };
+        var isAdminParam = new SqlParameter("@IsAdmin", SqlDbType.Bit)
+        {
+            Direction = ParameterDirection.Output
+        };
         await db.Database.ExecuteSqlRawAsync(
-            "EXEC ConnexionUtilisateur @Email, @MotDePasse, @Resultat OUTPUT",
-            emailParam, mdp, reponseParam
+            "EXEC ConnexionUtilisateur @Email, @MotDePasse, @Reponse OUTPUT, @IsAdmin OUTPUT",
+            emailParam, mdp, reponseParam, isAdminParam
             );
 
-        return reponseParam.Value == DBNull.Value ? -1 : (int)reponseParam.Value;
-    }
-    private static Utilisateur? GetUtilisateur(ProgA25BdProjetProgContext db, int? noUtilisateur)
-    {
-        Utilisateur? utilisateurRetour = db.Utilisateurs
-            .FirstOrDefault(u => u.NoUtilisateur == noUtilisateur);
+        int resultat = reponseParam.Value == DBNull.Value ? -1 : (int)reponseParam.Value;
+        bool isAdmin = isAdminParam.Value != DBNull.Value && (bool)isAdminParam.Value;
 
-        return utilisateurRetour;
+        return (resultat, isAdmin);
     }
-
 }
