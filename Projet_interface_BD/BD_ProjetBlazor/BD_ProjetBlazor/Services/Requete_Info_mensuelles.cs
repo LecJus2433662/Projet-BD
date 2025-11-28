@@ -18,30 +18,37 @@ namespace BD_ProjetBlazor.Services
         {
             using var _context = _dbContextFactory.CreateDbContext();
 
-            var stats = await _context.StationnementEntreeSorties
+            var raw = await _context.StationnementEntreeSorties
                 .GroupBy(s => new
                 {
                     Annee = s.DateSortie.Year,
                     Mois = s.DateSortie.Month
                 })
-                .Select(g => new StatMensuelle
+                .Select(g => new
                 {
-                    Annee = g.Key.Annee,
-                    Mois = g.Key.Mois,
-                    NomMois = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(g.Key.Mois),
+                    g.Key.Annee,
+                    g.Key.Mois,
                     TotalArgent = g.Sum(x => x.PaiementSortie),
-                    NbJoursActifs = g.Select(x => x.DateSortie).Distinct().Count(),
-                    MoyenneArgentParJour = g.Sum(x => x.PaiementSortie) / g.Select(x => x.DateSortie).Distinct().Count(),
                     TotalPersonnes = g.Count(),
-                    MoyennePersonnesParJour = (double)g.Count() / g.Select(x => x.DateSortie).Distinct().Count()
+                    JoursActifs = g.Select(x => x.DateSortie).Distinct().Count()
                 })
                 .OrderBy(x => x.Annee)
                 .ThenBy(x => x.Mois)
                 .ToListAsync();
+            var result = raw.Select(r => new StatMensuelle
+            {
+                Annee = r.Annee,
+                Mois = r.Mois,
+                NomMois = CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(r.Mois),
+                TotalArgent = r.TotalArgent,
+                NbJoursActifs = r.JoursActifs,
+                MoyenneArgentParJour = r.JoursActifs == 0 ? 0 : r.TotalArgent / r.JoursActifs,
+                TotalPersonnes = r.TotalPersonnes,
+                MoyennePersonnesParJour = r.JoursActifs == 0 ? 0 : (double)r.TotalPersonnes / r.JoursActifs
+            })
+           .ToList();
 
-            return stats;
+            return result;
         }
     }
-
-    
 }
