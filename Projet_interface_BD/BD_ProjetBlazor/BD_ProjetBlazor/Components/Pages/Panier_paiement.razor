@@ -61,7 +61,7 @@ else
 
     protected override async Task OnInitializedAsync()
     {
-        reservations = await Service.GetReservationsForUser();
+        //reservations = await Service.GetReservationsForUser();
     }
 
     async Task LoadReservation(int id)
@@ -73,7 +73,7 @@ else
     {
         if (await Service.DeleteReservation(id))
         {
-            reservations = await Service.GetReservationsForUser();
+     //       reservations = await Service.GetReservationsForUser();
         }
     }
 

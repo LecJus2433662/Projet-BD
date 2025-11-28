@@ -21,6 +21,7 @@ public class Requete_Achat_Reservation
         StripeConfiguration.ApiKey = stripeKey;
     }
 
+<<<<<<< HEAD
     // -------------------------
     // Helpers : récupérer userId et admin
     // -------------------------
@@ -87,6 +88,11 @@ public class Requete_Achat_Reservation
     // -------------------------
     // Récupérer une réservation par ID
     // -------------------------
+=======
+    // ---------------------------------------------------------
+    // GET RESERVATION FROM DATABASE
+    // ---------------------------------------------------------
+>>>>>>> 38bd3f3f7a0269a53376a0c97824f60f52b66399
     public async Task<ReservationDTO?> GetReservationFromDb(int reservationId)
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();

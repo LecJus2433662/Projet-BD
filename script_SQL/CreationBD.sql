@@ -78,5 +78,6 @@ CREATE TABLE stationnementEntreeSortie
 	numStationnement				INT				NULL,
 	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
-);	
-select * from utilisateur 
+);
+
+select * from stationnementEntreeSortie

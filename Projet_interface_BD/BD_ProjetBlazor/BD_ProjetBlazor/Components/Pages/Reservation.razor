@@ -103,8 +103,6 @@
             message = "Le stationnement n'est pas disponible pour cette période.";
             return;
         }
-
-        int hui = 1;
         var reservation = new StationnementEntreeSortie
         {
             NumStationnement = form.NumStationnement,
@@ -117,17 +115,12 @@
         if (result)
         {
             message = "Réservation réussie ! Vous allez maintenant être redirigé vers la page de paiement.";
-            await Task.Delay(1000);
-            //NavigationManager.NavigateTo("/page-de-paiement");
+            await Task.Delay(3000);
+            NavigationManager.NavigateTo("/panier_paiement");
         }
         else
         {
             message = "Erreur lors de la réservation, veuillez réessayer.";
         }
     }
-    //TODO Faire les roles admin et user
-    //TODO Verifier pour la page qui montre les reservations de user
-    //TODO Changer le nav menu bar en haut et le nom de project
-    //TODO Changer pour que l<utilisateur ne voix pas les pages si n est pas connecte
-    //TODO Modifier la bd, pour que utilisateur ait  le champ role(mettre le "user par default"), apres modifier la procedure inscription(donner "user par default") et apres faire les roles view
 }

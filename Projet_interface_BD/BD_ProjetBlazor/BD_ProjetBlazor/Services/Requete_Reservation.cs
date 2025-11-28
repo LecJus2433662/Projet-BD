@@ -103,8 +103,8 @@ namespace BD_ProjetBlazor.Services
 
                 // Exécuter la requête SQL brute
                 int rowsAffected = await _context.Database.ExecuteSqlRawAsync(
-                    "INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation) " +
-                    "VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation)",
+                    @"INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation) 
+                    VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation)",
                     paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation);
 
                 // Si des lignes ont été affectées, cela signifie que l'insertion a réussi
