@@ -20,7 +20,7 @@ public class Requete_Achat_Reservation
     // ---------------------------------------------------------
     // GET RESERVATION FROM DATABASE
     // ---------------------------------------------------------
-    public async Task<ReservationDTO?> GetReservationFromDb(int reservationId, string courriel)
+    public async Task<ReservationDTO?> GetReservationFromDb(int reservationId)
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
 
