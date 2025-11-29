@@ -54,7 +54,7 @@
                 return;
             }
 
-            var utilisateur = await ConnexionService.VerifierConnexion(form.Courriel, form.MotDePasse);
+            var utilisateur = await ConnexionService.VerifierConnexion(form);
 
             if (utilisateur == null)
             {

@@ -86,7 +86,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        availableStationnements = await StationnementService.GetAvailableStationnementsAsync(form.dateEntree, form.dateSortie);
+        availableStationnements = await StationnementService.GetAvailableStationnementsAsync(form);
     }
 
     private async Task FaireReservation()
@@ -97,7 +97,7 @@
             return;
         }
 
-        var success = StationnementService.IsParkingAvailableAsync(form.NumStationnement, form.dateEntree, form.dateSortie);
+        var success = StationnementService.IsParkingAvailableAsync(form);
         if (success == null)
         {
             message = "Le stationnement n'est pas disponible pour cette période.";

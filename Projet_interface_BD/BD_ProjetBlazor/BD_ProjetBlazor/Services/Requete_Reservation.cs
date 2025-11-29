@@ -5,12 +5,15 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
+using System.Net.NetworkInformation;
 using System.Threading.Tasks;
+using BD_ProjetBlazor.Partials;
 
 namespace BD_ProjetBlazor.Services
 {
     public class Requete_Reservation
     {
+
         private readonly IDbContextFactory<ProgA25BdProjetProgContext> _dbContextFactory;
 
         public Requete_Reservation(IDbContextFactory<ProgA25BdProjetProgContext> dbContextFactory)
@@ -61,13 +64,13 @@ namespace BD_ProjetBlazor.Services
 
             return tarif * nbJours;
         }
-        public async Task<Stationnement?> IsParkingAvailableAsync(int stationnementId, DateOnly startDateTime, DateOnly endDateTime)
+        public async Task<Stationnement?> IsParkingAvailableAsync(ReservationForm form)
         {
             int placeMax = 0;
             using var _context = _dbContextFactory.CreateDbContext();
             var stationnement = await _context.Stationnements.FirstOrDefaultAsync();
             var numStationnement = await _context.Stationnements
-                .FirstOrDefaultAsync(n => n.NumStationnement == stationnementId);
+                .FirstOrDefaultAsync(n => n.NumStationnement == form.NumStationnement);
 
             if (numStationnement == null)
             {
@@ -75,11 +78,11 @@ namespace BD_ProjetBlazor.Services
             }
             placeMax = numStationnement.NombrePlaceMax;
 
-            int totalReservations = await GetTotalReservationsAsync(stationnementId);
+            int totalReservations = await GetTotalReservationsAsync(form.NumStationnement);
             if (placeMax > totalReservations)
             {
                 var verifierTemps = await _context.StationnementEntreeSorties
-                .AnyAsync(d => d.DateEntree > startDateTime && d.DateSortie < endDateTime);
+                .AnyAsync(d => d.DateEntree > form.dateEntree && d.DateSortie < form.dateSortie);
 
                 if (!verifierTemps)
                 {
@@ -117,7 +120,7 @@ namespace BD_ProjetBlazor.Services
             }
         }
 
-        public async Task<List<Stationnement>> GetAvailableStationnementsAsync(DateOnly startDateTime, DateOnly endDateTime)
+        public async Task<List<Stationnement>> GetAvailableStationnementsAsync(ReservationForm form)
         {
             using var _context = _dbContextFactory.CreateDbContext();
 
@@ -132,8 +135,8 @@ namespace BD_ProjetBlazor.Services
                     .AnyAsync(n => n.NumStationnement == stationnement.NumStationnement);
                 // Vérifier si le stationnement est disponible pour les dates demandées
                 var reservationExistante = await _context.StationnementEntreeSorties
-                    .AnyAsync(r => r.DateEntree < endDateTime
-                                   && r.DateSortie > startDateTime);
+                    .AnyAsync(r => r.DateEntree < form.dateEntree
+                                   && r.DateSortie > form.dateSortie);
 
                 // Si pas de réservation existante, le stationnement est disponible
                 if (!reservationExistante && numStationnement)

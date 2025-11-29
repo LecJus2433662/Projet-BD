@@ -3,7 +3,7 @@
     public class ReservationForm
     {
         public int NumStationnement { get; set; }
-        public DateOnly dateEntree { get; set; }
-        public DateOnly dateSortie { get; set; }
+        public DateOnly dateEntree { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+        public DateOnly dateSortie { get; set; } = DateOnly.FromDateTime(DateTime.Today);
     }
 }

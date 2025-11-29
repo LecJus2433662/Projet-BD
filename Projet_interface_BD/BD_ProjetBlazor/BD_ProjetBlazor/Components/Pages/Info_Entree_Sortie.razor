@@ -1,75 +1,46 @@
 ﻿@page "/Info_Entree_Sortie"
 @attribute [StreamRendering]
+@using BD_ProjetBlazor.Partials 
 @inject Requete_EntreeSortieService Requete_EntreeSortieService
 
-<h3 class="text-center">Bienvenue dans le stationnement de Jusnder </h3>
+<h3 class="text-center mb-4">Bienvenue dans le stationnement de Jusnder</h3>
 
-<div class="container mt-5">
+<div class="container mt-3">
     <div class="row">
-        <!-- Nombre total de stationnements -->
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Nombre Total de Stationnements</h5>
-                    <p class="card-text">@TotalParkingSpaces</p>
-                </div>
+        @if (allStats == null || !allStats.Any())
+        {
+            <div class="col-12">
+                <p class="text-center text-muted">Chargement des informations...</p>
             </div>
-        </div>
+        }
+        else
+        {
+            @foreach (var s in allStats)
+            {
+                <div class="col-lg-4 col-md-6 mb-4">
+                    <div class="card shadow-sm h-100">
+                        <div class="card-body">
+                            <h5 class="card-title text-primary"> Stationnement @s.StationnementId</h5>
+                            <hr />
 
-        <!-- Nombre de réservations -->
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Réservations Actuelles</h5>
-                    <p class="card-text">@TotalReservations</p>
+                            <p class="mb-1"><b>Places totales :</b> @s.TotalParkingSpaces</p>
+                            <p class="mb-1"><b>Réservations :</b> @s.TotalReservations</p>
+                            <p class="mb-1"><b>Places libres :</b> @s.AvailableSpaces</p>
+                            <p class="mb-1"><b>Occupation :</b> @s.OccupiedPercentage.ToString("0.0") %</p>
+                            <p class="mb-1"><b>Tarif :</b> @s.TarifActuel $</p>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Nombre de places libres -->
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Places Libres</h5>
-                    <p class="card-text">@AvailableSpaces</p>
-                </div>
-            </div>
-        </div>
-
-        <!-- Pourcentage de places occupées -->
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Places Occupées (%)</h5>
-                    <p class="card-text">@OccupiedPercentage %</p>
-                </div>
-            </div>
-        </div>
-        <!-- tarif actuelle -->
-        <div class="col-lg-3 col-md-6 mb-4">
-            <div class="card">
-                <div class="card-body">
-                    <h5 class="card-title">Tarif actuel</h5>
-                    <p class="card-text">@TarifActuel</p>
-                </div>
-            </div>
-        </div>
+            }
+        }
     </div>
 </div>
-@code {
 
-    private int TotalParkingSpaces;
-    private int TotalReservations;
-    private int AvailableSpaces;
-    private double OccupiedPercentage;
-    private decimal? TarifActuel;
+@code {
+    private List<StatistiquesStationnementForm> allStats = new();
 
     protected override async Task OnInitializedAsync()
     {
-        TotalParkingSpaces = await Requete_EntreeSortieService.GetTotalParkingSpacesAsync();
-        TotalReservations = await Requete_EntreeSortieService.GetTotalReservationsAsync();
-        AvailableSpaces = await Requete_EntreeSortieService.GetAvailableSpacesAsync();
-        OccupiedPercentage = await Requete_EntreeSortieService.GetOccupiedPercentageAsync();
-        TarifActuel = await Requete_EntreeSortieService.GetTarifActuel();
+        allStats = await Requete_EntreeSortieService.GetAllStationnementsStatsAsync();
     }
 }
