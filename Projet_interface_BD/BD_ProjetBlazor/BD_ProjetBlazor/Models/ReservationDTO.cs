@@ -7,5 +7,6 @@
         public DateOnly DateEntree { get; set; }
         public DateOnly DateSortie { get; set; }
         public decimal Montant { get; set; }
+        public int? UtilisateurId { get; internal set; }
     }
 }

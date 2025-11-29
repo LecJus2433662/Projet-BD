@@ -46,56 +46,5 @@ namespace BD_ProjetBlazor.Services
             return statsList;
         }
 
-        //public async Task<int> GetTotalParkingSpacesAsync()
-        //{
-        //    using var _context = _dbContextFactory.CreateDbContext();
-        //    var stationnement = await _context.Stationnements.FirstOrDefaultAsync();
-
-        //    if (stationnement != null)
-        //    {
-        //        return stationnement.NombrePlaceMax;
-        //    }
-        //    else
-        //    {
-        //        return 0;
-        //    }
-        //}
-
-        //public async Task<int> GetTotalReservationsAsync()
-        //{
-        //    using var _context = _dbContextFactory.CreateDbContext();
-        //    return await Task.FromResult(_context.StationnementEntreeSorties.Count(r => r.Reservation == true));
-        //}
-
-        //public async Task<int> GetAvailableSpacesAsync()
-        //{
-        //    var totalSpaces = await GetTotalParkingSpacesAsync();
-        //    var reservedSpaces = await GetTotalReservationsAsync();
-        //    return totalSpaces - reservedSpaces;
-        //}
-
-        //public async Task<double> GetOccupiedPercentageAsync()
-        //{
-        //    var totalSpaces = await GetTotalParkingSpacesAsync();
-        //    var availableSpaces = await GetAvailableSpacesAsync();
-        //    return ((totalSpaces - availableSpaces) / (double)totalSpaces) * 100;
-        //}
-
-        //public async Task<decimal?> GetTarifActuel()
-        //{
-        //    using var _context = _dbContextFactory.CreateDbContext();
-        //    var stationnement = await _context.Stationnements.FirstOrDefaultAsync();
-
-        //    if (stationnement != null)
-        //    {
-        //        return (decimal)stationnement.Tarif;  
-        //    }
-        //    else
-        //    {
-        //        return 0.0m;
-        //    }
-        //}
-
-
     }
 }
