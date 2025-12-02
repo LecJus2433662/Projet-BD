@@ -81,3 +81,6 @@ CREATE TABLE stationnementEntreeSortie
 );
 
 select * from stationnementEntreeSortie
+SELECT *
+FROM stationnementEntreeSortie
+WHERE dateSortie IS NULL OR dateEntree IS NULL OR paiementSortie IS NULL;

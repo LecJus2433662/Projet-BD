@@ -8,12 +8,6 @@
 @inject NavigationManager NavigationManager
 @inject AuthenticationStateProvider AuthProvider
 
-<style>
-    :root body {
-        background-color: grey;
-    }
-</style>
-
 <h3 class="text-center mb-4">Inscription</h3>
 
 <div class="container border rounded p-4 bg-white" style="max-width: 600px;">
@@ -23,7 +17,7 @@
 
         <div class="mb-3">
             <label class="form-label">Courriel :</label>
-            <InputText class="form-control" @bind-Value="model.Email" />
+            <InputText type="email" class="form-control" @bind-Value="model.Email" />
         </div>
 
         <div class="mb-3">
@@ -52,6 +46,7 @@
         </div>
 
         <button type="submit" class="btn btn-primary w-100">S'inscrire</button>
+        <button class="btn btn-primary w-100 mt-3" @onclick="NavigateToLogin">Connexion</button>
     </EditForm>
 
     @if (!string.IsNullOrEmpty(Message))
@@ -67,6 +62,9 @@
 
     private async Task HandleSubmit()
     {
+        Message = "";
+        AlertClass = "";
+
         try
         {
             var passwordBytes = Encoding.UTF8.GetBytes(model.MotDePasse);
@@ -80,9 +78,9 @@
                 model.Pays
             );
 
-            if (model != null)
+           
+            if (result > 0)
             {
-                // Succès → connexion automatique
                 var userSession = new UserSession
                 {
                     nomUtilisateur = model.Email,
@@ -95,22 +93,27 @@
                 Message = "Inscription réussie ! Bienvenue !";
                 AlertClass = "alert-success";
 
-                NavigationManager.NavigateTo("/Panier_paiement", forceLoad: false);
+                NavigationManager.NavigateTo("/Info_Entree_Sortie");
             }
-            
+            else if (result == -2)
+            {
+                Message = "Ce courriel est déjà utilisé.";
+                AlertClass = "alert-warning";
+            }
             else
             {
                 Message = "Erreur lors de l'inscription. Veuillez réessayer.";
                 AlertClass = "alert-danger";
             }
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             Message = "Une erreur inattendue est survenue.";
             AlertClass = "alert-danger";
-            // Optionnel : Logger l'erreur en prod
         }
     }
-
-   
+    private void NavigateToLogin()
+    {
+        NavigationManager.NavigateTo("/");
+    }
 }
