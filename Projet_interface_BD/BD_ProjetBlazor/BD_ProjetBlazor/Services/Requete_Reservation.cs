@@ -1,24 +1,26 @@
-﻿using BD_ProjetBlazor.Components.Pages;
+﻿using BD_ProjetBlazor.Authentication;
+using BD_ProjetBlazor.Components.Pages;
 using BD_ProjetBlazor.Data;
 using BD_ProjetBlazor.Models;
+using BD_ProjetBlazor.Partials;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Linq;
 using System.Net.NetworkInformation;
 using System.Threading.Tasks;
-using BD_ProjetBlazor.Partials;
-
 namespace BD_ProjetBlazor.Services
 {
     public class Requete_Reservation
     {
 
         private readonly IDbContextFactory<ProgA25BdProjetProgContext> _dbContextFactory;
-
-        public Requete_Reservation(IDbContextFactory<ProgA25BdProjetProgContext> dbContextFactory)
+        private readonly UserSessionService _session;
+        public Requete_Reservation(IDbContextFactory<ProgA25BdProjetProgContext> dbContextFactory, UserSessionService session)
         {
             _dbContextFactory = dbContextFactory;
+            _session = session;
         }
 
         // Les fonctions
@@ -96,8 +98,13 @@ namespace BD_ProjetBlazor.Services
         public async Task<bool> AjouterReservationAsync(StationnementEntreeSortie reservation)
         {
             using var _context = _dbContextFactory.CreateDbContext();
+            int? userId = await _session.GetUserIdAsync();
+
+            if (userId == null)
+                return false;
             try
             {
+                var paramIdUtilisateur = new SqlParameter("@numUtilisateur", userId);
                 var paramNumStationnement = new SqlParameter("@numStationnement", reservation.NumStationnement);
                 var paramDateEntree = new SqlParameter("@dateEntree", reservation.DateEntree);
                 var paramDateSortie = new SqlParameter("@dateSortie", reservation.DateSortie);
@@ -106,9 +113,9 @@ namespace BD_ProjetBlazor.Services
                 var paramPaiementRecu = new SqlParameter("@paiementRecu", false);
 
                 int rowsAffected = await _context.Database.ExecuteSqlRawAsync(
-                    @"INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation, paiementSortie, paiementRecu) 
-                    VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation, @paiementSortie, @paiementRecu)",
-                    paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation, paramPaiementSortie, paramPaiementRecu);
+                    @"INSERT INTO stationnementEntreeSortie (numUtilisateur, numStationnement, dateEntree, dateSortie, reservation, paiementSortie, paiementRecu) 
+                    VALUES (@numUtilisateur ,@numStationnement, @dateEntree, @dateSortie, @reservation, @paiementSortie, @paiementRecu)",
+                    paramIdUtilisateur,paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation, paramPaiementSortie, paramPaiementRecu);
 
 
                 return rowsAffected > 0;

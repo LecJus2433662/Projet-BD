@@ -24,6 +24,7 @@ builder.Services.AddScoped<AuthenticationStateProvider, CustomAuthenticationStat
 builder.Services.AddScoped<Requete_Reservation>();
 builder.Services.AddScoped<LoginForm>();
 builder.Services.AddScoped<ReservationForm>();
+builder.Services.AddScoped<UserSessionService>();
 builder.Services.AddAuthenticationCore();
 builder.Services.AddAuthorizationCore();
 builder.Services.AddRazorComponents()
