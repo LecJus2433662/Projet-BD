@@ -102,15 +102,14 @@ namespace BD_ProjetBlazor.Services
                 var paramDateEntree = new SqlParameter("@dateEntree", reservation.DateEntree);
                 var paramDateSortie = new SqlParameter("@dateSortie", reservation.DateSortie);
                 var paramPaiementSortie = new SqlParameter("@paiementSortie", reservation.PaiementSortie);
-                var paramPaiementRecu = new SqlParameter("@paiementRecu", reservation.PaiementRecu);
                 var paramReservation = new SqlParameter("@reservation", reservation.Reservation);
+                var paramPaiementRecu = new SqlParameter("@paiementRecu", false);
 
                 int rowsAffected = await _context.Database.ExecuteSqlRawAsync(
-                    @"INSERT INTO stationnementEntreeSortie
-                (numStationnement, dateEntree, dateSortie, paiementSortie, paiementRecu, reservation)
-              VALUES (@numStationnement, @dateEntree, @dateSortie, @paiementSortie, @paiementRecu, @reservation)",
-                    paramNumStationnement, paramDateEntree, paramDateSortie,
-                    paramPaiementSortie, paramPaiementRecu, paramReservation);
+                    @"INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation, paiementSortie, paiementRecu) 
+                    VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation, @paiementSortie, @paiementRecu)",
+                    paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation, paramPaiementSortie, paramPaiementRecu);
+
 
                 return rowsAffected > 0;
             }

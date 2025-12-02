@@ -5,5 +5,7 @@
         public int NumStationnement { get; set; }
         public DateOnly dateEntree { get; set; } = DateOnly.FromDateTime(DateTime.Today);
         public DateOnly dateSortie { get; set; } = DateOnly.FromDateTime(DateTime.Today);
+        public decimal? PaiementSortie { get; set; }
+
     }
 }
