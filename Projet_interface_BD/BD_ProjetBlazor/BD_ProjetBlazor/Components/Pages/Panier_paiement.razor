@@ -1,86 +1,203 @@
 ﻿@page "/panier_paiement"
+@rendermode InteractiveServer
+@using BD_ProjetBlazor.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
+@using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
 @inject NavigationManager Nav
 @inject Requete_Achat_Reservation Service
 @inject AuthenticationStateProvider Auth
+@inject ProtectedSessionStorage SessionStorage
 
 <h3>Mes réservations</h3>
 
-@if (reservations == null)
+@if (!string.IsNullOrEmpty(errorMessage))
+{
+    <div class="alert alert-danger">@errorMessage</div>
+}
+
+@if (isLoading)
 {
     <p>Chargement...</p>
 }
-else if (!reservations.Any())
-{
-    <p>Aucune réservation.</p>
-}
 else
 {
-    <ul class="list-group mb-4">
-        @foreach (var r in reservations)
+    <div class="mb-3">
+        @if (isAdmin)
         {
-            <li class="list-group-item d-flex justify-content-between">
-                <span>
-                    <b>ID:</b> @r.ReservationId —
-                    @r.DateEntree.ToShortDateString() → @r.DateSortie.ToShortDateString()
-                    (@r.Montant.ToString("C"))
-                </span>
-
-                <div>
-                    <button class="btn btn-sm btn-secondary me-1"
-                            @onclick="() => LoadReservation(r.ReservationId)">
-                        Voir
-                    </button>
-
-                    <button class="btn btn-sm btn-danger"
-                            @onclick="() => DeleteReservation(r.ReservationId)">
-                        Supprimer
-                    </button>
-                </div>
-            </li>
+            <span class="badge bg-warning text-dark">Admin — voit toutes les réservations</span>
+            <div class="mt-2">
+                <label>Filtrer par Utilisateur (ID):</label>
+                <input class="form-control d-inline-block w-auto ms-2" @bind="filterUserIdString" placeholder="ex: 3" />
+                <button class="btn btn-sm btn-secondary ms-2" @onclick="ApplyFilter">Appliquer</button>
+                <button class="btn btn-sm btn-outline-secondary ms-2" @onclick="ClearFilter">Effacer</button>
+            </div>
         }
-    </ul>
+        else
+        {
+            <span class="badge bg-primary">Utilisateur</span>
+        }
+    </div>
+
+    @if (reservations == null || !reservations.Any())
+    {
+        <p>Aucune réservation.</p>
+    }
+    else
+    {
+        <ul class="list-group mb-4">
+            @foreach (var r in reservations)
+            {
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <b>ID:</b> @r.ReservationId —
+                        @(r.DateEntree?.ToShortDateString() ?? "N/A") → @(r.DateSortie?.ToShortDateString() ?? "N/A")
+                        (@r.Montant.ToString("C"))
+                        @if (isAdmin)
+                        {
+                            <span class="ms-3"><b>UtilisateurId:</b> @r.UtilisateurId</span>
+                        }
+                    </div>
+                    <div>
+                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => LoadReservation(r.ReservationId)">Voir</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteReservation(r.ReservationId)">Supprimer</button>
+                    </div>
+                </li>
+            }
+        </ul>
+    }
 }
 
 @if (reservation != null)
 {
     <h3>Résumé</h3>
     <p><b>Stationnement :</b> @reservation.NumStationnement</p>
-    <p><b>Entrée :</b> @reservation.DateEntree.ToShortDateString()</p>
-    <p><b>Sortie :</b> @reservation.DateSortie.ToShortDateString()</p>
+    <p><b>Entrée :</b> @(reservation.DateEntree?.ToShortDateString() ?? "N/A")</p>
+    <p><b>Sortie :</b> @(reservation.DateSortie?.ToShortDateString() ?? "N/A")</p>
     <p><b>Total :</b> @reservation.Montant.ToString("C")</p>
 
-    <button class="btn btn-primary" @onclick="CreateCheckout">
-        Payer
-    </button>
+    <button class="btn btn-primary" @onclick="CreateCheckout">Payer</button>
 }
 
 @code {
     List<ReservationDTO>? reservations;
     ReservationDTO? reservation;
+    bool isAdmin = false;
+    bool isLoading = true;
+    int? filterUserId = null;
+    string? filterUserIdString;
+    int currentUserId = 0;
+    string? errorMessage;
 
     protected override async Task OnInitializedAsync()
     {
-        //reservations = await Service.GetReservationsForUser();
+        try
+        {
+            var state = await Auth.GetAuthenticationStateAsync();
+            var user = state.User;
+
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                isAdmin = string.Equals(user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value, "admin", StringComparison.OrdinalIgnoreCase);
+                int.TryParse(user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out currentUserId);
+            }
+
+            // fallback session
+            if (currentUserId == 0)
+            {
+                var session = await SessionStorage.GetAsync<UserSession>("UserSession");
+                if (session.Success && session.Value != null)
+                {
+                    currentUserId = session.Value.utilisateurId;
+                    if (!isAdmin) isAdmin = string.Equals(session.Value.role, "admin", StringComparison.OrdinalIgnoreCase);
+                }
+            }
+
+            await LoadReservations();
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erreur lors du chargement : " + ex.Message;
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    async Task LoadReservations()
+    {
+        try
+        {
+            if (isAdmin)
+            {
+                reservations = await Service.GetAllReservations();
+                if (filterUserId.HasValue)
+                    reservations = reservations.Where(r => r.UtilisateurId == filterUserId.Value).ToList();
+            }
+            else
+            {
+                reservations = await Service.GetReservationsByUserId(currentUserId);
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erreur lors du chargement des réservations : " + ex.Message;
+            reservations = new List<ReservationDTO>();
+        }
+    }
+
+    async Task ApplyFilter()
+    {
+        if (int.TryParse(filterUserIdString, out var id))
+            filterUserId = id;
+        else
+            filterUserId = null;
+
+        await LoadReservations();
+    }
+
+    async Task ClearFilter()
+    {
+        filterUserId = null;
+        filterUserIdString = null;
+        await LoadReservations();
     }
 
     async Task LoadReservation(int id)
     {
-        reservation = await Service.GetReservationFromDb(id);
+        try
+        {
+            reservation = await Service.GetReservationFromDb(id);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Impossible de charger la réservation : " + ex.Message;
+        }
     }
 
     async Task DeleteReservation(int id)
     {
-        if (await Service.DeleteReservation(id))
+        try
         {
-     //       reservations = await Service.GetReservationsForUser();
+            if (await Service.DeleteReservationAs(id, currentUserId, isAdmin))
+            {
+                await LoadReservations();
+                reservation = null;
+            }
+            else
+            {
+                errorMessage = "Suppression non autorisée ou réservation introuvable.";
+            }
+        }
+        catch (Exception ex)
+        {
+            errorMessage = "Erreur lors de la suppression : " + ex.Message;
         }
     }
 
     async Task CreateCheckout()
     {
         if (reservation == null) return;
-
         var url = await Service.CreateStripeCheckout(reservation.ReservationId);
         Nav.NavigateTo(url, forceLoad: true);
     }
