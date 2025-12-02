@@ -25,13 +25,34 @@ namespace BD_ProjetBlazor.Services
 
         // Les fonctions
 
+        public async Task<int> GetTotalParkingSpacesAsync()
+        {
+            using var _context = _dbContextFactory.CreateDbContext();
+            var totalPlaces = await _context.Stationnements.SumAsync(s => s.NombrePlaceMax);
+            return totalPlaces;
+        }
         public async Task<int> GetTotalReservationsAsync(int stationnementId)
         {
             using var _context = _dbContextFactory.CreateDbContext();
-            var reservations = await _context.StationnementEntreeSorties
-                .Where(r => r.NumStationnement == stationnementId && r.Reservation == true)
+            var now = DateOnly.FromDateTime(DateTime.Now);
+
+            // Compte uniquement les réservations qui sont en cours actuellement
+            var reservationsActives = await _context.StationnementEntreeSorties
+                .Where(r =>
+                    r.NumStationnement == stationnementId &&
+                    r.Reservation == true &&
+                    r.DateEntree <= now &&
+                    r.DateSortie >= now
+                )
                 .ToListAsync();
-            return reservations.Count;
+
+            return reservationsActives.Count;
+        }
+        public async Task<int> GetAvailableSpacesAsync(int stationnementId)
+        {
+            var totalPlaces = await GetTotalParkingSpacesAsync();
+            var totalReservations = await GetTotalReservationsAsync(stationnementId);
+            return totalPlaces - totalReservations;
         }
         public int CalculerNombreDeJours(DateOnly dateEntree, DateOnly dateSortie)
         {
@@ -68,40 +89,62 @@ namespace BD_ProjetBlazor.Services
         }
         public async Task<Stationnement?> IsParkingAvailableAsync(ReservationForm form)
         {
-            int placeMax = 0;
             using var _context = _dbContextFactory.CreateDbContext();
-            var stationnement = await _context.Stationnements.FirstOrDefaultAsync();
-            var numStationnement = await _context.Stationnements
+
+            // Vérifie que le stationnement existe
+            var stationnement = await _context.Stationnements
                 .FirstOrDefaultAsync(n => n.NumStationnement == form.NumStationnement);
 
-            if (numStationnement == null)
-            {
+            if (stationnement == null)
                 return null;
-            }
-            placeMax = numStationnement.NombrePlaceMax;
 
-            int totalReservations = await GetTotalReservationsAsync(form.NumStationnement);
-            if (placeMax > totalReservations)
-            {
-                var verifierTemps = await _context.StationnementEntreeSorties
-                .AnyAsync(d => d.DateEntree > form.dateEntree && d.DateSortie < form.dateSortie);
+            int placeMax = stationnement.NombrePlaceMax;
 
-                if (!verifierTemps)
-                {
-                    return stationnement;
-                }
+            // Compte le nombre de réservations qui **chevauchent exactement la période demandée**
+            int totalReservations = await _context.StationnementEntreeSorties
+                .CountAsync(r =>
+                    r.NumStationnement == form.NumStationnement &&
+                    r.Reservation == true &&
+                    r.DateEntree < form.dateSortie &&
+                    r.DateSortie > form.dateEntree
+                );
 
-            }
-            return null;
+            // Si le nombre de réservations chevauchantes atteint la capacité maximale, pas de place
+            if (totalReservations >= placeMax)
+                return null;
+
+            // Sinon, la réservation est possible
+            return stationnement;
         }
+
+
 
         public async Task<bool> AjouterReservationAsync(StationnementEntreeSortie reservation)
         {
             using var _context = _dbContextFactory.CreateDbContext();
             int? userId = await _session.GetUserIdAsync();
-
             if (userId == null)
                 return false;
+
+            var reservations = await _context.StationnementEntreeSorties
+                .Where(r => r.NumStationnement == reservation.NumStationnement)
+    .           ToListAsync();
+
+            // Récupérer le stationnement correspondant pour accéder au nombre maximum de places
+            var stationnement = await _context.Stationnements
+                .FirstOrDefaultAsync(s => s.NumStationnement == reservation.NumStationnement);
+
+            if (stationnement == null)
+            {
+                // Stationnement inexistant
+                return false;
+            }
+            // Vérifie si le nombre de réservations dépasse la capacité
+            if (reservations.Count >= stationnement.NombrePlaceMax)
+            {
+                // Plus de places disponibles
+                return false;
+            }
             try
             {
                 var paramIdUtilisateur = new SqlParameter("@numUtilisateur", userId);
@@ -115,7 +158,7 @@ namespace BD_ProjetBlazor.Services
                 int rowsAffected = await _context.Database.ExecuteSqlRawAsync(
                     @"INSERT INTO stationnementEntreeSortie (numUtilisateur, numStationnement, dateEntree, dateSortie, reservation, paiementSortie, paiementRecu) 
                     VALUES (@numUtilisateur ,@numStationnement, @dateEntree, @dateSortie, @reservation, @paiementSortie, @paiementRecu)",
-                    paramIdUtilisateur,paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation, paramPaiementSortie, paramPaiementRecu);
+                    paramIdUtilisateur, paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation, paramPaiementSortie, paramPaiementRecu);
 
 
                 return rowsAffected > 0;
