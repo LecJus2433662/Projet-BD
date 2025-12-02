@@ -103,12 +103,14 @@ namespace BD_ProjetBlazor.Services
                 var paramDateEntree = new SqlParameter("@dateEntree", reservation.DateEntree);
                 var paramDateSortie = new SqlParameter("@dateSortie", reservation.DateSortie);
                 var paramReservation = new SqlParameter("@reservation", reservation.Reservation);
+                var paramPaiement = new SqlParameter("@paiementSortie", reservation.PaiementSortie);
+                var paramPaiementRecu = new SqlParameter("@paiementRecu", false);
 
                 // Exécuter la requête SQL brute
                 int rowsAffected = await _context.Database.ExecuteSqlRawAsync(
-                    @"INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation) 
-                    VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation)",
-                    paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation);
+                    @"INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation, paiementSortie, paiementRecu) 
+                    VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation, @paiementSortie, @paiementRecu)",
+                    paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation, paramPaiement, paramPaiementRecu);
 
                 // Si des lignes ont été affectées, cela signifie que l'insertion a réussi
                 return rowsAffected > 0;

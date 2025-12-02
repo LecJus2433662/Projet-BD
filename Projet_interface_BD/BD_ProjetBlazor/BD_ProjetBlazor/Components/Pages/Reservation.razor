@@ -103,12 +103,15 @@
             message = "Le stationnement n'est pas disponible pour cette période.";
             return;
         }
+        form.PaiementSortie = montantAPayer;
         var reservation = new StationnementEntreeSortie
         {
             NumStationnement = form.NumStationnement,
             DateEntree = form.dateEntree,
             DateSortie = form.dateSortie,
-            Reservation = true
+            Reservation = true,
+            PaiementSortie = (decimal)form.PaiementSortie!,
+            PaiementRecu = false
         };
 
         bool result = await StationnementService.AjouterReservationAsync(reservation);

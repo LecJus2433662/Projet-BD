@@ -84,5 +84,5 @@ VALUES
 (1,'2025-12-05','2025-12-05',1,5.50,0),
 (1,'2025-12-12','2025-12-12',1,6.75,1),
 (1,'2025-12-22','2025-12-22',1,8.25,1);
-select * from  utilisateur
+select * from  stationnementEntreeSortie
 
