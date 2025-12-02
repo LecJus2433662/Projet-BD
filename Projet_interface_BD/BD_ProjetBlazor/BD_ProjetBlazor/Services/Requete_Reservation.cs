@@ -46,7 +46,7 @@ namespace BD_ProjetBlazor.Services
             return stationnement?.Tarif ?? 0;
         }
 
-        public async Task<decimal?> CalculerMontantAPayer(DateOnly dateEntree, DateOnly dateSortie)
+        public async Task<decimal> CalculerMontantAPayer(DateOnly dateEntree, DateOnly dateSortie)
         {
             using var _context = _dbContextFactory.CreateDbContext();
 
@@ -98,19 +98,20 @@ namespace BD_ProjetBlazor.Services
             using var _context = _dbContextFactory.CreateDbContext();
             try
             {
-                // Paramètres de la requête SQL
                 var paramNumStationnement = new SqlParameter("@numStationnement", reservation.NumStationnement);
                 var paramDateEntree = new SqlParameter("@dateEntree", reservation.DateEntree);
                 var paramDateSortie = new SqlParameter("@dateSortie", reservation.DateSortie);
+                var paramPaiementSortie = new SqlParameter("@paiementSortie", reservation.PaiementSortie);
+                var paramPaiementRecu = new SqlParameter("@paiementRecu", reservation.PaiementRecu);
                 var paramReservation = new SqlParameter("@reservation", reservation.Reservation);
 
-                // Exécuter la requête SQL brute
                 int rowsAffected = await _context.Database.ExecuteSqlRawAsync(
-                    @"INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, reservation) 
-                    VALUES (@numStationnement, @dateEntree, @dateSortie, @reservation)",
-                    paramNumStationnement, paramDateEntree, paramDateSortie, paramReservation);
+                    @"INSERT INTO stationnementEntreeSortie
+                (numStationnement, dateEntree, dateSortie, paiementSortie, paiementRecu, reservation)
+              VALUES (@numStationnement, @dateEntree, @dateSortie, @paiementSortie, @paiementRecu, @reservation)",
+                    paramNumStationnement, paramDateEntree, paramDateSortie,
+                    paramPaiementSortie, paramPaiementRecu, paramReservation);
 
-                // Si des lignes ont été affectées, cela signifie que l'insertion a réussi
                 return rowsAffected > 0;
             }
             catch (Exception ex)
@@ -119,6 +120,7 @@ namespace BD_ProjetBlazor.Services
                 return false;
             }
         }
+
 
         public async Task<List<Stationnement>> GetAvailableStationnementsAsync(ReservationForm form)
         {

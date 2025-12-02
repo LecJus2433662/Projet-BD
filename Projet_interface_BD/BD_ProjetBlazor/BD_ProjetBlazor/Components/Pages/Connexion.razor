@@ -1,7 +1,7 @@
 ﻿@page "/"
 @using BD_ProjetBlazor.Authentication
 @using BD_ProjetBlazor.Partials
-@using Microsoft.AspNetCore.Components.Authorization 
+@using Microsoft.AspNetCore.Components.Authorization
 @inject Requete_Connexion ConnexionService
 @inject AuthenticationStateProvider authProvider
 @inject LoginForm LoginForm
@@ -32,6 +32,7 @@
             <button class="btn btn-primary" @onclick="NavigateToSignUp">Inscription</button>
         </div>
     </EditForm>
+
     @if (!string.IsNullOrEmpty(message))
     {
         <div class="alert alert-danger mt-3">
@@ -63,30 +64,20 @@
             }
 
             var customAuthProvider = authProvider as CustomAuthenticationStateProvider;
-            if (utilisateur.IsAdmin == true)
+
+            await customAuthProvider.UpdateAuthenticationState(new UserSession
             {
-                await customAuthProvider.UpdateAuthenticationState(new Authentication.UserSession
-                {
-                    nomUtilisateur = utilisateur.Prenom,
-                    role = "admin"
-                });
-            }
-            else
-            {
-                await customAuthProvider.UpdateAuthenticationState(new Authentication.UserSession
-                {
-                    nomUtilisateur = utilisateur.Prenom,
-                    role = "user"
-                });
-            }
-           
+                utilisateurId = utilisateur.NoUtilisateur,   // <-- IMPORTANT
+                nomUtilisateur = utilisateur.Prenom,
+                role = utilisateur.IsAdmin ? "admin" : "user"
+            });
 
             NavigationManager.NavigateTo("/Info_Entree_Sortie");
         }
-        catch(Exception ex)
+        catch (Exception ex)
         {
-            message = ex.Message;       // Affiche dans la page
-            Console.WriteLine(ex);      // Log console
+            message = ex.Message;
+            Console.WriteLine(ex);
         }
     }
 
@@ -94,5 +85,4 @@
     {
         NavigationManager.NavigateTo("/inscription");
     }
-    
 }

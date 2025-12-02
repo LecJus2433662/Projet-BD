@@ -30,8 +30,10 @@ namespace BD_ProjetBlazor.Authentication
                         new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
                         {
                             new Claim(ClaimTypes.Name, userSession.nomUtilisateur),
-                            new Claim(ClaimTypes.Role, userSession.role)
+                            new Claim(ClaimTypes.Role, userSession.role),
+                            new Claim("UserId", userSession.utilisateurId.ToString())
                         }, "CustomAuth"));
+
                 }
             }
             catch
@@ -50,18 +52,19 @@ namespace BD_ProjetBlazor.Authentication
             {
                 await _sessionStorage.SetAsync("UserSession", userSession);
                 claimsPrincipal =
-                    new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
-                        {
-                            new Claim(ClaimTypes.Name, userSession.nomUtilisateur),
-                            new Claim(ClaimTypes.Role, userSession.role)
-                        }, "CustomAuth"));
+                     new ClaimsPrincipal(new ClaimsIdentity(new List<Claim>
+                     {
+                        new Claim(ClaimTypes.Name, userSession.nomUtilisateur),
+                        new Claim(ClaimTypes.Role, userSession.role),
+                        new Claim("UserId", userSession.utilisateurId.ToString())
+                     }, "CustomAuth"));
             }
             else
             {
                 await _sessionStorage.DeleteAsync("UserSession");
                 claimsPrincipal = _anonymous;
             }
-            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal))); 
+            NotifyAuthenticationStateChanged(Task.FromResult(new AuthenticationState(claimsPrincipal)));
         }
     }
 }

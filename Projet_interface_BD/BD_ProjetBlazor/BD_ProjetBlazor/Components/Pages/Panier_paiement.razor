@@ -3,10 +3,14 @@
 @using BD_ProjetBlazor.Authentication
 @using Microsoft.AspNetCore.Components.Authorization
 @using Microsoft.AspNetCore.Components.Server.ProtectedBrowserStorage
+@using System.Security.Claims
+@using BD_ProjetBlazor.Data
+@using Microsoft.EntityFrameworkCore
 @inject NavigationManager Nav
 @inject Requete_Achat_Reservation Service
 @inject AuthenticationStateProvider Auth
 @inject ProtectedSessionStorage SessionStorage
+@inject IDbContextFactory<ProgA25BdProjetProgContext> DbFactory
 
 <h3>Mes réservations</h3>
 
@@ -49,17 +53,18 @@ else
             {
                 <li class="list-group-item d-flex justify-content-between align-items-center">
                     <div>
-                        <b>ID:</b> @r.ReservationId —
-                        @(r.DateEntree?.ToShortDateString() ?? "N/A") → @(r.DateSortie?.ToShortDateString() ?? "N/A")
-                        (@r.Montant.ToString("C"))
+                        <b>ID:</b> @r.EntreSortieStationnement —
+                        @r.DateEntree.ToShortDateString() → @r.DateSortie.ToShortDateString()
+                        (@r.PaiementSortie.ToString("C"))
+
                         @if (isAdmin)
                         {
-                            <span class="ms-3"><b>UtilisateurId:</b> @r.UtilisateurId</span>
+                            <span class="ms-3"><b>UtilisateurId:</b> @r.NumUtilisateur</span>
                         }
                     </div>
                     <div>
-                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => LoadReservation(r.ReservationId)">Voir</button>
-                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteReservation(r.ReservationId)">Supprimer</button>
+                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => LoadReservation(r.EntreSortieStationnement)">Voir</button>
+                        <button class="btn btn-sm btn-danger" @onclick="() => DeleteReservation(r.EntreSortieStationnement)">Supprimer</button>
                     </div>
                 </li>
             }
@@ -71,20 +76,23 @@ else
 {
     <h3>Résumé</h3>
     <p><b>Stationnement :</b> @reservation.NumStationnement</p>
-    <p><b>Entrée :</b> @(reservation.DateEntree?.ToShortDateString() ?? "N/A")</p>
-    <p><b>Sortie :</b> @(reservation.DateSortie?.ToShortDateString() ?? "N/A")</p>
-    <p><b>Total :</b> @reservation.Montant.ToString("C")</p>
+    <p><b>Entrée :</b> @reservation.DateEntree.ToShortDateString()</p>
+    <p><b>Sortie :</b> @reservation.DateSortie.ToShortDateString()</p>
+    <p><b>Total :</b> @reservation.PaiementSortie.ToString("C")</p>
 
     <button class="btn btn-primary" @onclick="CreateCheckout">Payer</button>
 }
 
 @code {
-    List<ReservationDTO>? reservations;
-    ReservationDTO? reservation;
+    List<StationnementEntreeSortie>? reservations;
+    StationnementEntreeSortie? reservation;
+
     bool isAdmin = false;
     bool isLoading = true;
+
     int? filterUserId = null;
     string? filterUserIdString;
+
     int currentUserId = 0;
     string? errorMessage;
 
@@ -95,21 +103,75 @@ else
             var state = await Auth.GetAuthenticationStateAsync();
             var user = state.User;
 
+            // 1) Role
             if (user?.Identity?.IsAuthenticated == true)
             {
-                isAdmin = string.Equals(user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.Role)?.Value, "admin", StringComparison.OrdinalIgnoreCase);
-                int.TryParse(user.FindFirst(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value, out currentUserId);
+                var roleClaim = user.FindFirst(c => c.Type == ClaimTypes.Role);
+                isAdmin = roleClaim != null && string.Equals(roleClaim.Value, "admin", StringComparison.OrdinalIgnoreCase);
             }
 
-            // fallback session
+            // 2) Try NameIdentifier claim first
+            if (user?.Identity?.IsAuthenticated == true)
+            {
+                var idClaim = user.FindFirst(c => c.Type == ClaimTypes.NameIdentifier);
+                if (idClaim != null && int.TryParse(idClaim.Value, out var idFromClaim))
+                {
+                    currentUserId = idFromClaim;
+                }
+            }
+
+            // 3) Fallback: session storage (UserSession.utilisateurId)
             if (currentUserId == 0)
             {
                 var session = await SessionStorage.GetAsync<UserSession>("UserSession");
                 if (session.Success && session.Value != null)
                 {
-                    currentUserId = session.Value.utilisateurId;
-                    if (!isAdmin) isAdmin = string.Equals(session.Value.role, "admin", StringComparison.OrdinalIgnoreCase);
+                    if (session.Value.utilisateurId > 0)
+                        currentUserId = session.Value.utilisateurId;
+
+                    // ensure we pick admin from session if not set by claim
+                    if (!isAdmin && !string.IsNullOrEmpty(session.Value.role))
+                        isAdmin = string.Equals(session.Value.role, "admin", StringComparison.OrdinalIgnoreCase);
                 }
+            }
+
+            // 4) Last resort: try to resolve DB utilisateur by matching ClaimTypes.Name (email or name)
+            if (currentUserId == 0 && user?.Identity?.IsAuthenticated == true)
+            {
+                var nameClaim = user.FindFirst(c => c.Type == ClaimTypes.Name)?.Value;
+                if (!string.IsNullOrEmpty(nameClaim))
+                {
+                    try
+                    {
+                        await using var db = await DbFactory.CreateDbContextAsync();
+
+                        // Attempt matching by email first, then by nom + prenom, then nom alone.
+                        var utilisateur = await db.Utilisateurs
+                            .Where(u => u.Email == nameClaim
+                                        || (u.Nom + " " + u.Prenom) == nameClaim
+                                        || u.Nom == nameClaim)
+                            .OrderBy(u => u.NoUtilisateur)
+                            .FirstOrDefaultAsync();
+
+                        if (utilisateur != null)
+                        {
+                            currentUserId = utilisateur.NoUtilisateur;
+                        }
+                    }
+                    catch (Exception exDb)
+                    {
+                        // Ne pas faire crasher la page — on conserve currentUserId = 0 et on affichera message plus bas.
+                        Console.WriteLine("Erreur lecture utilisateur BD: " + exDb.Message);
+                    }
+                }
+            }
+
+            // If still 0 and not admin -> show message and stop
+            if (currentUserId == 0 && !isAdmin)
+            {
+                errorMessage = "Impossible d'identifier l'utilisateur (ID). Veuillez vous reconnecter.";
+                reservations = new List<StationnementEntreeSortie>();
+                return;
             }
 
             await LoadReservations();
@@ -130,9 +192,11 @@ else
         {
             if (isAdmin)
             {
-                reservations = await Service.GetAllReservations();
+                var all = await Service.GetAllReservations();
                 if (filterUserId.HasValue)
-                    reservations = reservations.Where(r => r.UtilisateurId == filterUserId.Value).ToList();
+                    reservations = all.Where(r => r.NumUtilisateur == filterUserId.Value).ToList();
+                else
+                    reservations = all;
             }
             else
             {
@@ -142,17 +206,13 @@ else
         catch (Exception ex)
         {
             errorMessage = "Erreur lors du chargement des réservations : " + ex.Message;
-            reservations = new List<ReservationDTO>();
+            reservations = new List<StationnementEntreeSortie>();
         }
     }
 
     async Task ApplyFilter()
     {
-        if (int.TryParse(filterUserIdString, out var id))
-            filterUserId = id;
-        else
-            filterUserId = null;
-
+        filterUserId = int.TryParse(filterUserIdString, out var id) ? id : null;
         await LoadReservations();
     }
 
@@ -167,7 +227,8 @@ else
     {
         try
         {
-            reservation = await Service.GetReservationFromDb(id);
+            var r = await Service.GetReservationFromDb(id);
+            reservation = r;
         }
         catch (Exception ex)
         {
@@ -198,7 +259,7 @@ else
     async Task CreateCheckout()
     {
         if (reservation == null) return;
-        var url = await Service.CreateStripeCheckout(reservation.ReservationId);
+        var url = await Service.CreateStripeCheckout(reservation.EntreSortieStationnement);
         Nav.NavigateTo(url, forceLoad: true);
     }
 }

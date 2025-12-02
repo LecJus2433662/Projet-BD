@@ -9,7 +9,7 @@ public class Requete_Achat_Reservation
 {
     private readonly IDbContextFactory<ProgA25BdProjetProgContext> _dbContextFactory;
     private readonly AuthenticationStateProvider _auth;
-    private readonly string stripeKey = "sk_test_xxxxx"; // remplace par ta clé Stripe
+    private readonly string stripeKey = "sk_test_xxxxx"; // Remplace par ta vraie clé
 
     public Requete_Achat_Reservation(
         IDbContextFactory<ProgA25BdProjetProgContext> dbContextFactory,
@@ -20,94 +20,80 @@ public class Requete_Achat_Reservation
         StripeConfiguration.ApiKey = stripeKey;
     }
 
-    // ---------- Lecture d'une réservation ----------
-    public async Task<ReservationDTO?> GetReservationFromDb(int reservationId)
+    // --------------------------------------------------------
+    // GET — Une seule réservation
+    // --------------------------------------------------------
+    public async Task<StationnementEntreeSortie?> GetReservationFromDb(int reservationId)
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
 
         return await db.StationnementEntreeSorties
-            .Where(r => r.EntreSortieStationnement == reservationId)
-            .Select(r => new ReservationDTO
-            {
-                ReservationId = r.EntreSortieStationnement,
-                DateEntree = r.DateEntree,
-                DateSortie = r.DateSortie,
-                Montant = r.PaiementSortie,
-                NumStationnement = r.NumStationnement ?? 0,
-                UtilisateurId = r.NumUtilisateur ?? 0
-            })
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(r => r.EntreSortieStationnement == reservationId);
     }
 
-    // ---------- Liste complète ----------
-    public async Task<List<ReservationDTO>> GetAllReservations()
+    // --------------------------------------------------------
+    // GET — Toutes les réservations (admin)
+    // --------------------------------------------------------
+    public async Task<List<StationnementEntreeSortie>> GetAllReservations()
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
 
         return await db.StationnementEntreeSorties
             .Where(r => r.Reservation == true)
-            .Select(r => new ReservationDTO
-            {
-                ReservationId = r.EntreSortieStationnement,
-                DateEntree = r.DateEntree,
-                DateSortie = r.DateSortie,
-                Montant = r.PaiementSortie,
-                NumStationnement = r.NumStationnement ?? 0,
-                UtilisateurId = r.NumUtilisateur ?? 0
-            })
             .ToListAsync();
     }
 
-    public async Task<List<ReservationDTO>> GetReservationsByUserId(int userId)
+    // --------------------------------------------------------
+    // GET — Réservations d’un utilisateur
+    // --------------------------------------------------------
+    public async Task<List<StationnementEntreeSortie>> GetReservationsByUserId(int userId)
     {
         if (userId <= 0)
-            return new List<ReservationDTO>();
+            return new List<StationnementEntreeSortie>();
 
         await using var db = await _dbContextFactory.CreateDbContextAsync();
 
         return await db.StationnementEntreeSorties
             .Where(r => r.NumUtilisateur == userId && r.Reservation == true)
-            .Select(r => new ReservationDTO
-            {
-                ReservationId = r.EntreSortieStationnement,
-                DateEntree = r.DateEntree,
-                DateSortie = r.DateSortie,
-                Montant = r.PaiementSortie,
-                NumStationnement = r.NumStationnement ?? 0,
-                UtilisateurId = r.NumUtilisateur ?? 0
-            })
             .ToListAsync();
     }
 
-    // ---------- Supprimer ----------
+    // --------------------------------------------------------
+    // DELETE — Admin ou propriétaire
+    // --------------------------------------------------------
     public async Task<bool> DeleteReservationAs(int reservationId, int userId, bool isAdmin)
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
 
-        var reservation = await db.StationnementEntreeSorties
-            .FirstOrDefaultAsync(r => r.EntreSortieStationnement == reservationId);
+        var r = await db.StationnementEntreeSorties
+            .FirstOrDefaultAsync(x => x.EntreSortieStationnement == reservationId);
 
-        if (reservation == null)
+        if (r == null)
             return false;
 
-        if (!isAdmin && (reservation.NumUtilisateur == null || reservation.NumUtilisateur != userId))
+        // Si non admin → doit être le propriétaire
+        if (!isAdmin && (r.NumUtilisateur == null || r.NumUtilisateur != userId))
             return false;
 
-        db.StationnementEntreeSorties.Remove(reservation);
+        db.StationnementEntreeSorties.Remove(r);
         await db.SaveChangesAsync();
         return true;
     }
 
-    // ---------- Stripe Checkout ----------
+    // --------------------------------------------------------
+    // Stripe checkout
+    // --------------------------------------------------------
     public async Task<string> CreateStripeCheckout(int reservationId)
     {
-        var reservation = await GetReservationFromDb(reservationId);
-        if (reservation == null)
+        var r = await GetReservationFromDb(reservationId);
+
+        if (r == null)
             throw new Exception("Réservation introuvable.");
 
         var options = new SessionCreateOptions
         {
             PaymentMethodTypes = new List<string> { "card" },
+
             LineItems = new List<SessionLineItemOptions>
             {
                 new SessionLineItemOptions
@@ -115,7 +101,7 @@ public class Requete_Achat_Reservation
                     PriceData = new SessionLineItemPriceDataOptions
                     {
                         Currency = "cad",
-                        UnitAmountDecimal = reservation.Montant * 100,
+                        UnitAmountDecimal = r.PaiementSortie * 100,
                         ProductData = new SessionLineItemPriceDataProductDataOptions
                         {
                             Name = $"Réservation stationnement #{reservationId}"
@@ -124,7 +110,9 @@ public class Requete_Achat_Reservation
                     Quantity = 1
                 }
             },
+
             Mode = "payment",
+
             SuccessUrl = $"https://tonsite.ca/paiement/succes/{reservationId}",
             CancelUrl = $"https://tonsite.ca/paiement/erreur/{reservationId}"
         };
@@ -137,6 +125,9 @@ public class Requete_Achat_Reservation
         return session.Url;
     }
 
+    // --------------------------------------------------------
+    // INSERT paiement
+    // --------------------------------------------------------
     public async Task SavePaiement(int reservationId, string sessionId)
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
@@ -151,6 +142,9 @@ public class Requete_Achat_Reservation
         );
     }
 
+    // --------------------------------------------------------
+    // UPDATE paiement (webhook Stripe)
+    // --------------------------------------------------------
     public async Task UpdatePaiementStatus(int reservationId, string statut)
     {
         await using var db = await _dbContextFactory.CreateDbContextAsync();
