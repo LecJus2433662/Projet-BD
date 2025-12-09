@@ -15,7 +15,8 @@ INSERT INTO capteur(mouvement,dates)
 	
 INSERT INTO stationnement(nombrePlaceMax,dureeMaxStationnement,tarif,estPlein)
 	VALUES
-	(120, '00:00:00', 15.00, 0);
+	(120, '00:00:00', 15.00, 0),
+	(10, '00:00:00', 15.00, 0);
 
 INSERT INTO barriere(dureeAttente,noBarriereOuverture,tempsOuverture,numeroCapteur)
 	VALUES
@@ -86,3 +87,9 @@ VALUES
 (1,'2025-12-22','2025-12-22',1,8.25,1);
 select * from  stationnementEntreeSortie
 
+INSERT INTO stationnementEntreeSortie (numStationnement, dateEntree, dateSortie, paiementRecu, paiementSortie, reservation,numUtilisateur)
+VALUES
+(1,'2025-12-02','2025-12-03',0,30,1,4);
+
+delete from stationnement
+where nombrePlaceMax = 120

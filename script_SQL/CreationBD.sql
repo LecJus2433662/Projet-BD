@@ -1,13 +1,6 @@
-use master;
-IF EXISTS (SELECT name FROM sys.databases WHERE name = N'Prog_A25_Bd_Projet')
-BEGIN
-	ALTER DATABASE Prog_A25_Bd_Projet SET SINGLE_USER WITH ROLLBACK IMMEDIATE;
-	DROP DATABASE Prog_A25_Bd_Projet;
-END
-CREATE DATABASE Prog_A25_Bd_Projet;
-GO
 
-USE Prog_A25_BD_Projet_Prog;
+
+USE Prog_A25_BD_Projet;
 
 
 
@@ -79,8 +72,7 @@ CREATE TABLE stationnementEntreeSortie
 	reservation						BIT
 	PRIMARY KEY (entreSortieStationnement)
 );
-
+select * from utilisateur
 select * from stationnementEntreeSortie
-SELECT *
-FROM stationnementEntreeSortie
-WHERE dateSortie IS NULL OR dateEntree IS NULL OR paiementSortie IS NULL;
+select * from stationnement
+

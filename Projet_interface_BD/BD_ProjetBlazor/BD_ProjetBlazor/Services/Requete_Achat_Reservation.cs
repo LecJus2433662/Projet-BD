@@ -158,4 +158,20 @@ public class Requete_Achat_Reservation
             new Microsoft.Data.SqlClient.SqlParameter("@Statut", statut)
         );
     }
+    public async Task<bool> MarquerPaiementCommeRecu(int reservationId)
+    {
+        await using var db = await _dbContextFactory.CreateDbContextAsync();
+
+        var reservation = await db.StationnementEntreeSorties
+            .FirstOrDefaultAsync(r => r.EntreSortieStationnement == reservationId);
+
+        if (reservation == null)
+            return false;
+
+        reservation.PaiementRecu = true;
+
+        await db.SaveChangesAsync();
+        return true;
+    }
+
 }
