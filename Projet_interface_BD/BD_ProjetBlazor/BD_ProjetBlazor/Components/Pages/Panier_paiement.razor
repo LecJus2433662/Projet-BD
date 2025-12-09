@@ -12,7 +12,30 @@
 @inject ProtectedSessionStorage SessionStorage
 @inject IDbContextFactory<ProgA25BdProjetProgContext> DbFactory
 
-<h3>Mes réservations</h3>
+<!-- EN-TÊTE AVEC RÉSUMÉ À DROITE -->
+<div class="d-flex justify-content-between align-items-start mb-3">
+
+    <div>
+        <h3>Mes réservations</h3>
+    </div>
+
+    @if (reservation != null)
+    {
+        <div class="card p-3 shadow-sm" style="width: 260px;">
+            <h5>Résumé</h5>
+            <p><b>Stationnement :</b> @reservation.NumStationnement</p>
+            <p><b>Entrée :</b> @reservation.DateEntree.ToShortDateString()</p>
+            <p><b>Sortie :</b> @reservation.DateSortie.ToShortDateString()</p>
+            <p><b>Total :</b> @reservation.PaiementSortie.ToString("C")</p>
+
+            @if (reservation.PaiementRecu == false)
+            {
+                <button class="btn btn-primary w-100" @onclick="ValiderPaiement">Payer</button>
+            }
+        </div>
+    }
+</div>
+
 
 @if (!string.IsNullOrEmpty(errorMessage))
 {
@@ -48,45 +71,37 @@ else
     }
     else
     {
-        <ul class="list-group mb-4">
-            @foreach (var r in reservations)
-            {
-                <li class="list-group-item d-flex justify-content-between align-items-center">
-                    <div>
-                        <b>ID:</b> @r.EntreSortieStationnement —
-                        @r.DateEntree.ToShortDateString() → @r.DateSortie.ToShortDateString()
-                        (@r.PaiementSortie.ToString("C"))
+        <!-- LISTE SCROLLABLE -->
+        <div style="
+            height: calc(100vh - 260px);
+            overflow-y: auto;
+        ">
+            <ul class="list-group mb-4">
+                @foreach (var r in reservations)
+                {
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        <div>
+                            <b>ID:</b> @r.EntreSortieStationnement —
+                            @r.DateEntree.ToShortDateString() → @r.DateSortie.ToShortDateString()
+                            (@r.PaiementSortie.ToString("C"))
 
-                        @if (isAdmin)
-                        {
-                            <span class="ms-3"><b>UtilisateurId:</b> @r.NumUtilisateur</span>
-                        }
-                    </div>
-                    <div>
-                        <button class="btn btn-sm btn-secondary me-1" @onclick="() => LoadReservation(r.EntreSortieStationnement)">Voir</button>
-                        @if (r.PaiementRecu == false)
-                        {
-                            <button class="btn btn-sm btn-danger" @onclick="() => DeleteReservation(r.EntreSortieStationnement)">Supprimer</button>
-                        }
-                    </div>
-                </li>
-            }
-        </ul>
+                            @if (isAdmin)
+                            {
+                                <span class="ms-3"><b>UtilisateurId:</b> @r.NumUtilisateur</span>
+                            }
+                        </div>
+                        <div>
+                            <button class="btn btn-sm btn-secondary me-1" @onclick="() => LoadReservation(r.EntreSortieStationnement)">Voir</button>
+                            @if (r.PaiementRecu == false)
+                            {
+                                <button class="btn btn-sm btn-danger" @onclick="() => DeleteReservation(r.EntreSortieStationnement)">Supprimer</button>
+                            }
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
     }
-}
-
-@if (reservation != null)
-{
-    <h3>Résumé</h3>
-    <p><b>Stationnement :</b> @reservation.NumStationnement</p>
-    <p><b>Entrée :</b> @reservation.DateEntree.ToShortDateString()</p>
-    <p><b>Sortie :</b> @reservation.DateSortie.ToShortDateString()</p>
-    <p><b>Total :</b> @reservation.PaiementSortie.ToString("C")</p>
-    @if(reservation.PaiementRecu == false)
-    {
-    <button class="btn btn-primary" @onclick="ValiderPaiement">Payer</button>
-    }
-
 }
 
 @code {
@@ -196,6 +211,21 @@ else
     {
         try
         {
+            // 1) AUTO-DELETE des réservations expirées
+            await using (var db = await DbFactory.CreateDbContextAsync())
+            {
+                var expirées = await db.StationnementEntreeSorties
+                    .Where(r => r.Reservation == true && r.DateSortie < DateOnly.FromDateTime(DateTime.Now))
+                    .ToListAsync();
+
+                if (expirées.Any())
+                {
+                    db.StationnementEntreeSorties.RemoveRange(expirées);
+                    await db.SaveChangesAsync();
+                }
+            }
+
+            // 2) Charger les réservations comme avant
             if (isAdmin)
             {
                 var all = await Service.GetAllReservations();
