@@ -76,3 +76,7 @@ select * from utilisateur
 select * from stationnementEntreeSortie
 select * from stationnement
 
+delete from stationnementEntreeSortie
+where paiementSortie = 5.00
+
+

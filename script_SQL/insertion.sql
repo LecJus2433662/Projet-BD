@@ -15,7 +15,7 @@ INSERT INTO capteur(mouvement,dates)
 	
 INSERT INTO stationnement(nombrePlaceMax,dureeMaxStationnement,tarif,estPlein)
 	VALUES
-	(120, '00:00:00', 15.00, 0),
+	(120, '00:00:00', 5.00, 0),
 	(10, '00:00:00', 15.00, 0);
 
 INSERT INTO barriere(dureeAttente,noBarriereOuverture,tempsOuverture,numeroCapteur)
