@@ -58,4 +58,4 @@ EXEC dbo.ajout_admin
     @motDePasseChiffre = 'admin_Alex',
     @reponse = @reponse OUTPUT;
 SELECT @reponse as N'@message de réponse';
-select * from utilisateur;
+select * from stationnement

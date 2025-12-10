@@ -190,7 +190,7 @@ namespace BD_ProjetBlazor.Services
                                    && r.DateSortie > form.dateSortie);
 
                 // Si pas de réservation existante, le stationnement est disponible
-                if (!reservationExistante && numStationnement)
+                if (reservationExistante && numStationnement)
                 {
                     availableStationnements.Add(stationnement);
                 }

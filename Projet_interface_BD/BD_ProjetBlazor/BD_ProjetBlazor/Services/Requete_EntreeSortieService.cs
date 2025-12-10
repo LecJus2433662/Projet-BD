@@ -19,32 +19,35 @@ namespace BD_ProjetBlazor.Services
         public async Task<List<StatistiquesStationnementForm>> GetAllStationnementsStatsAsync()
         {
             using var _context = _dbContextFactory.CreateDbContext();
-
             var stationnements = await _context.Stationnements.ToListAsync();
 
             var statsList = new List<StatistiquesStationnementForm>();
 
             foreach (var s in stationnements)
             {
-                var totalReservations = _context.StationnementEntreeSorties
-                    .Count(r => r.Reservation == true && r.NumStationnement == s.NumStationnement);
+                var totalPresent = _context.StationnementEntreeSorties
+                    .Count(r => r.NumStationnement == s.NumStationnement
+                    && r.DateEntree == DateOnly.FromDateTime(DateTime.Today)
+                    && (r.DateSortie == null || r.DateSortie == DateOnly.FromDateTime(DateTime.Today)));
 
-                var availableSpaces = s.NombrePlaceMax - totalReservations;
+
+                var available = s.NombrePlaceMax - totalPresent;
 
                 statsList.Add(new StatistiquesStationnementForm
                 {
                     StationnementId = s.NumStationnement,
                     TotalParkingSpaces = s.NombrePlaceMax,
-                    TotalReservations = totalReservations,
-                    AvailableSpaces = availableSpaces,
+                    TotalReservations = totalPresent, // tu peux renommer si tu veux
+                    AvailableSpaces = available,
                     OccupiedPercentage = s.NombrePlaceMax == 0 ? 0 :
-                        (double)totalReservations / s.NombrePlaceMax * 100,
+                        (double)totalPresent / s.NombrePlaceMax * 100,
                     TarifActuel = s.Tarif
                 });
             }
-
             return statsList;
         }
 
     }
+
 }
+
